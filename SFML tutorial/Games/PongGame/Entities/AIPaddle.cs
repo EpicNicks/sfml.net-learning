@@ -13,6 +13,8 @@ public class AIPaddle : Moveable
     private float curBallHoldingSeconds = 0.0f;
     private readonly float BALL_HOLDING_SECONDS = 3.0f;
 
+    public required bool IsLeftSidePlayer { get; set; }
+
     public AIPaddle(FloatRect bounds)
     {
         Position = new Vector2f(bounds.Left, bounds.Top);

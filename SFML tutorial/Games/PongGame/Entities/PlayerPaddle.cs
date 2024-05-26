@@ -18,6 +18,8 @@ public class PlayerPaddle : Moveable
 
     private readonly Dictionary<Keyboard.Key, bool> pressedKeys;
 
+    public required bool IsLeftSidePlayer { get; set; }
+
     public PlayerPaddle(List<Keyboard.Key> upKeys, List<Keyboard.Key> downKeys, FloatRect bounds)
     {
         this.upKeys = upKeys;

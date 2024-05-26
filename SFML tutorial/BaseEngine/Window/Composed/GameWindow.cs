@@ -21,6 +21,7 @@ public class GameWindow
     private readonly Clock deltaClock = new();
     // keys sorted in ascending order
     private SortedDictionary<RenderLayer, List<GameObject>> gameObjects = new(Comparer<RenderLayer>.Create((l, r) => l - r));
+    private Queue<GameObject> attachQueue = [];
 
     private static string windowTitle;
     public static string WindowTitle
@@ -68,7 +69,7 @@ public class GameWindow
         {
             Instance.gameObjects[renderLayer] = [gameObject];
         }
-        gameObject.Attach();
+        Instance.attachQueue.Enqueue(gameObject);
     }
     public static void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects)
     {
@@ -135,6 +136,7 @@ public class GameWindow
         while (Instance.RenderWindow != null && Instance.RenderWindow.IsOpen)
         {
             DeltaTime = Instance.deltaClock.Restart();
+            ProcessAttachQueue();
             Update();
             HandleCollisions();
             Render();
@@ -169,6 +171,16 @@ public class GameWindow
             Instance.RenderWindow.SetView(new View(new FloatRect(0, 0, sizeEvent.Width, sizeEvent.Height)));
         };
     }
+
+    private static void ProcessAttachQueue()
+    {
+        while (Instance.attachQueue.Count > 0)
+        {
+            GameObject dequeuedGameObject = Instance.attachQueue.Dequeue();
+            dequeuedGameObject.Attach();
+        }
+    }
+
     private static void Update()
     {
         Instance.RenderWindow.DispatchEvents();

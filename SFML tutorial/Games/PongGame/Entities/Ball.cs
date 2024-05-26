@@ -11,16 +11,14 @@ public class Ball : Moveable
 {
     private readonly CircleShape circle;
     private readonly Collider2D collider;
-    private readonly Moveable player1, player2;
+    private Moveable? player1, player2;
     // start diagonally up and to the right
     private Vector2f moveVelocity = new Vector2f(-1, 1);
     private Moveable? playerHoldingBall;
     public Moveable? PlayerHoldingBall => playerHoldingBall;
 
-    public Ball(Moveable player1, Moveable player2)
+    public Ball()
     {
-        this.player1 = player1;
-        this.player2 = player2;
         float circleRadius = 5f;
         circle = new CircleShape
         {
@@ -48,6 +46,7 @@ public class Ball : Moveable
 
     public override void Attach()
     {
+        FindAndSetPaddles();
         SetInitialPosition(ScoreText.PlayerId.one);
         GameWindow.Instance.RenderWindow.KeyPressed += (_, e) =>
         {
@@ -108,5 +107,33 @@ public class Ball : Moveable
         // center of window (obsolete)
         //Vector2u gameWindowSize = GameWindow.Instance.RenderWindow.Size;
         //Position = new Vector2f(gameWindowSize.X / 2 - circle.Radius, gameWindowSize.Y / 2 - circle.Radius);
+    }
+
+    private void FindAndSetPaddles()
+    {
+        List<PlayerPaddle> playerPaddles = GameWindow.FindObjectsOfType<PlayerPaddle>();
+        List<AIPaddle> aiPaddles = GameWindow.FindObjectsOfType<AIPaddle>();
+        foreach (var paddle in playerPaddles)
+        {
+            if (paddle.IsLeftSidePlayer)
+            {
+                player1 = paddle;
+            }
+            else
+            {
+                player2 = paddle;
+            }
+        }
+        foreach (var paddle in aiPaddles)
+        {
+            if (paddle.IsLeftSidePlayer)
+            {
+                player1 = paddle;
+            }
+            else
+            {
+                player2 = paddle;
+            }
+        }
     }
 }

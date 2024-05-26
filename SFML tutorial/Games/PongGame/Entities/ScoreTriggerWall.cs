@@ -5,7 +5,6 @@ using SFML_tutorial.Games.PongGame.UI;
 namespace SFML_tutorial.Games.PongGame.Entities;
 public class ScoreTriggerWall : Positionable
 {
-
     private readonly ScoreText.PlayerId playerId;
     private ScoreText? scoreText;
 
