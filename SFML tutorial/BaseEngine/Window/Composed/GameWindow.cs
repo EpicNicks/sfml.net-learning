@@ -177,7 +177,10 @@ public class GameWindow
         while (Instance.attachQueue.Count > 0)
         {
             GameObject dequeuedGameObject = Instance.attachQueue.Dequeue();
-            dequeuedGameObject.Attach();
+            if (dequeuedGameObject.IsActive)
+            {
+                dequeuedGameObject.Attach();
+            }
         }
     }
 
