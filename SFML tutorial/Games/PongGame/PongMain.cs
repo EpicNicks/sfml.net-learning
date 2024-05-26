@@ -23,9 +23,9 @@ public class PongMain
             Anchors = (UIAnchored.UIAnchor.CENTER, UIAnchored.UIAnchor.START)
         });
         // Top collider (positioned at the top edge, with full width minus the side colliders)
-        GameWindow.Add(RenderLayer.NONE, new ColliderWall(new FloatRect(10, 0, windowSize.X - 20, 10)));
+        GameWindow.Add(RenderLayer.NONE, new ColliderWall { IsTopWall = true });
         // Bottom collider (positioned at the bottom edge, with full width minus the side colliders)
-        GameWindow.Add(RenderLayer.NONE, new ColliderWall(new FloatRect(10, windowSize.Y - 10, windowSize.X - 20, 10)));
+        GameWindow.Add(RenderLayer.NONE, new ColliderWall { IsTopWall = false });
         // Left collider (positioned at the left edge, with full height)
         GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(ScoreText.PlayerId.two, new FloatRect(0, 0, 10, windowSize.Y)));
         // Right collider (positioned at the right edge, with full height)

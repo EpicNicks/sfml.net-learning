@@ -33,6 +33,7 @@ public class Ball : Moveable
             IsTrigger = false
         };
     }
+
     public void ReleaseBall()
     {
         playerHoldingBall = null;
@@ -59,20 +60,12 @@ public class Ball : Moveable
 
     public override void Update()
     {
-        if (playerHoldingBall != null)
+        HandlePosition();
+        // handle if ball is way out of bounds
+        Vector2u gameWindowSize = GameWindow.Instance.RenderWindow.Size;
+        if (Position.X < -10 || Position.X > gameWindowSize.X + 10 || Position.Y < -10 || Position.Y > gameWindowSize.Y + 10)
         {
-            if (playerHoldingBall == player1)
-            {
-                Position = playerHoldingBall.Position + new Vector2f(20, playerHoldingBall.Collider?.Bounds.Height / 2 ?? 0);
-            }
-            else
-            {
-                Position = playerHoldingBall.Position + new Vector2f(-20, playerHoldingBall.Collider?.Bounds.Height / 2 ?? 0);
-            }
-        }
-        else
-        {
-            Move(moveVelocity);
+            SetInitialPosition(ScoreText.PlayerId.one);
         }
     }
 
@@ -134,6 +127,25 @@ public class Ball : Moveable
             {
                 player2 = paddle;
             }
+        }
+    }
+
+    private void HandlePosition()
+    {
+        if (playerHoldingBall != null)
+        {
+            if (playerHoldingBall == player1)
+            {
+                Position = playerHoldingBall.Position + new Vector2f(20, playerHoldingBall.Collider?.Bounds.Height / 2 ?? 0);
+            }
+            else
+            {
+                Position = playerHoldingBall.Position + new Vector2f(-20, playerHoldingBall.Collider?.Bounds.Height / 2 ?? 0);
+            }
+        }
+        else
+        {
+            Move(moveVelocity);
         }
     }
 }
