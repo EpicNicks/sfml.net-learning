@@ -5,7 +5,6 @@ using SFML_tutorial.Games.PongGame.Entities;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 
 using SFML.System;
-using SFML.Graphics;
 using SFML.Window;
 
 namespace SFML_tutorial.Games.PongGame;
@@ -14,22 +13,18 @@ public class PongMain
 {
     public static void Run()
     {
-        Vector2u windowSize = GameWindow.Instance.RenderWindow.Size;
         GameWindow.WindowTitle = "Pong";
+        // init general events for the game
 
         GameWindow.Add(RenderLayer.UI, new ScoreText
         {
             Position = new Vector2f(-20, 20),
             Anchors = (UIAnchored.UIAnchor.CENTER, UIAnchored.UIAnchor.START)
         });
-        // Top collider (positioned at the top edge, with full width minus the side colliders)
         GameWindow.Add(RenderLayer.NONE, new ColliderWall { IsTopWall = true });
-        // Bottom collider (positioned at the bottom edge, with full width minus the side colliders)
         GameWindow.Add(RenderLayer.NONE, new ColliderWall { IsTopWall = false });
-        // Left collider (positioned at the left edge, with full height)
-        GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(ScoreText.PlayerId.two, new FloatRect(0, 0, 10, windowSize.Y)));
-        // Right collider (positioned at the right edge, with full height)
-        GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(ScoreText.PlayerId.one, new FloatRect(windowSize.X - 10, 0, 10, windowSize.Y)));
+        GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(true));
+        GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(false));
         GameWindow.Add(RenderLayer.BASE, new Ball
         {
             MoveSpeed = 500f,
@@ -38,15 +33,15 @@ public class PongMain
         (
             [Keyboard.Key.Up, Keyboard.Key.W],
             [Keyboard.Key.Down, Keyboard.Key.S],
-            new FloatRect(windowSize.X / 8, windowSize.Y / 2, 20, 100)
+            new Vector2f(20, 100)
         )
         {
             MoveSpeed = 700f,
             IsLeftSidePlayer = true,
         });
-        GameWindow.Add(RenderLayer.BASE, new AIPaddle(new FloatRect(windowSize.X * 7f / 8f, windowSize.Y / 2, 20, 100))
+        GameWindow.Add(RenderLayer.BASE, new AIPaddle(new Vector2f(20, 100))
         {
-            MoveSpeed = 300f,
+            MoveSpeed = 320f,
             IsLeftSidePlayer = false,
         });
 

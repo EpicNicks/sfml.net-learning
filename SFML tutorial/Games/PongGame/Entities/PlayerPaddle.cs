@@ -20,7 +20,7 @@ public class PlayerPaddle : Moveable
 
     public required bool IsLeftSidePlayer { get; set; }
 
-    public PlayerPaddle(List<Keyboard.Key> upKeys, List<Keyboard.Key> downKeys, FloatRect bounds)
+    public PlayerPaddle(List<Keyboard.Key> upKeys, List<Keyboard.Key> downKeys, Vector2f size)
     {
         this.upKeys = upKeys;
         this.downKeys = downKeys;
@@ -33,18 +33,17 @@ public class PlayerPaddle : Moveable
         {
             pressedKeys[key] = false;
         }
-        Position = new Vector2f(bounds.Left, bounds.Top);
         collider = new Collider2D
         {
             IsStatic = true,
             PositionableGameObject = this,
             IsTrigger = false,
-            Bounds = bounds
+            Bounds = new FloatRect(Position, size)
         };
         rectangleShape = new RectangleShape
         {
             FillColor = Color.White,
-            Size = new Vector2f(bounds.Width, bounds.Height),
+            Size = size,
             Position = Position,
         };
     }
@@ -54,6 +53,7 @@ public class PlayerPaddle : Moveable
 
     public override void Attach()
     {
+        Position = new Vector2f(Position.X, GameWindow.Size.Y / 2f);
         GameWindow.Instance.RenderWindow.KeyPressed += (_, e) =>
         {
             if (pressedKeys.ContainsKey(e.Code))
@@ -72,9 +72,27 @@ public class PlayerPaddle : Moveable
 
     public override void Update()
     {
+        HandleResize();
+        HandleMove();
+    }
+
+    private void HandleMove()
+    {
         static int IfTrueThen(bool b, int value) => b ? value : 0;
         float yVelocity = 0 + IfTrueThen(upKeys.Any(key => pressedKeys[key]), -1) + IfTrueThen(downKeys.Any(key => pressedKeys[key]), 1);
         Move(new Vector2f(0, yVelocity));
-        Position = new Vector2f(Position.X, Math.Clamp(Position.Y, 0, GameWindow.Instance.RenderWindow.Size.Y - Collider.Bounds.Height));
+        Position = new Vector2f(Position.X, Math.Clamp(Position.Y, 0, GameWindow.Size.Y - Collider.Bounds.Height));
+    }
+
+    private void HandleResize()
+    {
+        if (IsLeftSidePlayer)
+        {
+            Position = new Vector2f(GameWindow.Size.X / 8f, Position.Y);
+        }
+        else
+        {
+            Position = new Vector2f(GameWindow.Size.X * 7f / 8f, Position.Y);
+        }
     }
 }

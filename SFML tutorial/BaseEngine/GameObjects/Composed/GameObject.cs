@@ -10,7 +10,11 @@ namespace SFML_tutorial.BaseEngine.GameObjects.Composed;
 /// </summary>
 public class GameObject
 {
-
+    /// <summary>
+    /// Tells the scene if it should pass forward the instance of the GameObject created when the scene transitions to a new scene.
+    /// Useful for GameObjects which contain globals or otherwise are lifetime objects such as singletons.
+    /// </summary>
+    public virtual bool PersistOnSceneTransition { get; set; } = false;
     /// <summary>
     /// To be used by the GameWindow to not process inactive GameObjects
     /// </summary>

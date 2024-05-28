@@ -21,7 +21,13 @@ public class GameWindow
     private readonly Clock deltaClock = new();
     // keys sorted in ascending order
     private SortedDictionary<RenderLayer, List<GameObject>> gameObjects = new(Comparer<RenderLayer>.Create((l, r) => l - r));
-    private Queue<GameObject> attachQueue = [];
+    private SortedDictionary<RenderLayer, List<GameObject>> GameObjects
+    {
+        // TODO: handle scene loading next
+        get => gameObjects;
+    }
+
+    public Queue<GameObject> AttachQueue { get; private set; } = [];
 
     private static string windowTitle;
     public static string WindowTitle
@@ -29,6 +35,10 @@ public class GameWindow
         get => windowTitle;
         set => Instance.RenderWindow.SetTitle(windowTitle = value);
     }
+    /// <summary>
+    /// A shortener for the common Instance.RenderWindow.Size get
+    /// </summary>
+    public static Vector2u Size => Instance.RenderWindow.Size;
     /// <summary>
     /// The time elapsed since the previous frame was drawn
     /// </summary>
@@ -50,10 +60,10 @@ public class GameWindow
 
     public static bool Contains(RenderLayer renderLayer, GameObject gameObject)
     {
-        return Instance.gameObjects.ContainsKey(renderLayer) && Instance.gameObjects[renderLayer].Contains(gameObject);
+        return Instance.GameObjects.ContainsKey(renderLayer) && Instance.GameObjects[renderLayer].Contains(gameObject);
     }
     public static bool Contains(GameObject gameObject)
-        => Instance.gameObjects.Keys.Any(renderLayer => Contains(renderLayer, gameObject));
+        => Instance.GameObjects.Keys.Any(renderLayer => Contains(renderLayer, gameObject));
 
     public static void Add(RenderLayer renderLayer, GameObject gameObject)
     {
@@ -61,15 +71,15 @@ public class GameWindow
         {
             throw new InvalidOperationException("GameObject was already added to window!");
         }
-        if (Instance.gameObjects.TryGetValue(renderLayer, out List<GameObject>? value))
+        if (Instance.GameObjects.TryGetValue(renderLayer, out List<GameObject>? value))
         {
             value.Add(gameObject);
         }
         else
         {
-            Instance.gameObjects[renderLayer] = [gameObject];
+            Instance.GameObjects[renderLayer] = [gameObject];
         }
-        Instance.attachQueue.Enqueue(gameObject);
+        Instance.AttachQueue.Enqueue(gameObject);
     }
     public static void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects)
     {
@@ -81,7 +91,7 @@ public class GameWindow
 
     public static T? FindObjectOfType<T>(RenderLayer renderLayer)
     {
-        foreach (var gameObject in Instance.gameObjects[renderLayer])
+        foreach (var gameObject in Instance.GameObjects[renderLayer])
         {
             if (gameObject is T t)
             {
@@ -94,7 +104,7 @@ public class GameWindow
     public static List<T> FindObjectsOfType<T>()
     {
         List<T> result = [];
-        foreach (var gameObject in Instance.gameObjects.Keys.SelectMany(key => Instance.gameObjects[key]))
+        foreach (var gameObject in Instance.GameObjects.Keys.SelectMany(key => Instance.GameObjects[key]))
         {
             if (gameObject is T t)
             {
@@ -106,7 +116,7 @@ public class GameWindow
 
     public static T? FindObjectOfType<T>()
     {
-        foreach (var gameObject in Instance.gameObjects.Keys.SelectMany(key => Instance.gameObjects[key]))
+        foreach (var gameObject in Instance.GameObjects.Keys.SelectMany(key => Instance.GameObjects[key]))
         {
             if (gameObject is T t)
             {
@@ -117,10 +127,10 @@ public class GameWindow
     }
 
     public static bool TryRemove(RenderLayer renderLayer, GameObject gameObject)
-        => Instance.gameObjects.ContainsKey(renderLayer) && Instance.gameObjects[renderLayer].Remove(gameObject);
+        => Instance.GameObjects.ContainsKey(renderLayer) && Instance.GameObjects[renderLayer].Remove(gameObject);
     public static bool TryRemove(GameObject gameObject)
     {
-        foreach (RenderLayer key in Instance.gameObjects.Keys)
+        foreach (RenderLayer key in Instance.GameObjects.Keys)
         {
             if (TryRemove(key, gameObject))
             {
@@ -174,9 +184,9 @@ public class GameWindow
 
     private static void ProcessAttachQueue()
     {
-        while (Instance.attachQueue.Count > 0)
+        while (Instance.AttachQueue.Count > 0)
         {
-            GameObject dequeuedGameObject = Instance.attachQueue.Dequeue();
+            GameObject dequeuedGameObject = Instance.AttachQueue.Dequeue();
             if (dequeuedGameObject.IsActive)
             {
                 dequeuedGameObject.Attach();
@@ -296,7 +306,7 @@ public class GameWindow
         Instance.RenderWindow.Display();
     }
 
-    private static List<GameObject> ActiveGameObjects => Instance.gameObjects.Keys.SelectMany(key => Instance.gameObjects[key]).Where(gameObject => gameObject.IsActive).ToList();
+    private static List<GameObject> ActiveGameObjects => Instance.GameObjects.Keys.SelectMany(key => Instance.GameObjects[key]).Where(gameObject => gameObject.IsActive).ToList();
 
     // layers should be iterated over in the correct order due to the SortedDictionary calling Render on lower layers first
     /// <summary>

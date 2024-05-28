@@ -61,12 +61,7 @@ public class Ball : Moveable
     public override void Update()
     {
         HandlePosition();
-        // handle if ball is way out of bounds
-        Vector2u gameWindowSize = GameWindow.Instance.RenderWindow.Size;
-        if (Position.X < -10 || Position.X > gameWindowSize.X + 10 || Position.Y < -10 || Position.Y > gameWindowSize.Y + 10)
-        {
-            SetInitialPosition(ScoreText.PlayerId.one);
-        }
+        HandleOOB();
     }
 
     public override void OnCollisionEnter2D(Collider2D other)
@@ -75,6 +70,12 @@ public class Ball : Moveable
         // determine collision normal, change moveVelocity
         // sides are pretty much absolute directions as they are
 
+        // TODO: should be generalized, the ball itself should not be the one to determine its velocity on collision
+        //  this should be handled generally by the physics engine
+        // HOW do we differentiate between colliders which interact and move when collided into and those which dont?
+        //  Rigidbody + Collider for those which are moved with properties of how they are collided with (velocity, mass) being on the Rigidbody
+        //  Collider alone for a collider which stays in place and does not "participate" in that interaction system
+        //  ... so basically what Unity does
         moveVelocity = sideHit switch
         {
             Collisions.SideHit.TOP => new Vector2f(moveVelocity.X, -moveVelocity.Y), // must have been moving downward
@@ -146,6 +147,15 @@ public class Ball : Moveable
         else
         {
             Move(moveVelocity);
+        }
+    }
+
+    private void HandleOOB()
+    {
+        Vector2u gameWindowSize = GameWindow.Instance.RenderWindow.Size;
+        if (Position.X < -10 || Position.X > gameWindowSize.X + 10 || Position.Y < -10 || Position.Y > gameWindowSize.Y + 10)
+        {
+            SetInitialPosition(ScoreText.PlayerId.one);
         }
     }
 }

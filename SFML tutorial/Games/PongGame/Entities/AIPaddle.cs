@@ -15,20 +15,19 @@ public class AIPaddle : Moveable
 
     public required bool IsLeftSidePlayer { get; set; }
 
-    public AIPaddle(FloatRect bounds)
+    public AIPaddle(Vector2f size)
     {
-        Position = new Vector2f(bounds.Left, bounds.Top);
         collider = new Collider2D
         {
             IsStatic = true,
             PositionableGameObject = this,
             IsTrigger = false,
-            Bounds = bounds
+            Bounds = new FloatRect(Position, size)
         };
         rectangleShape = new RectangleShape
         {
             FillColor = Color.White,
-            Size = new Vector2f(bounds.Width, bounds.Height),
+            Size = size,
             Position = Position,
         };
     }
@@ -38,13 +37,72 @@ public class AIPaddle : Moveable
 
     public override void Attach()
     {
+        Position = new Vector2f(Position.X, GameWindow.Size.Y / 2f);
         ballToWatch = GameWindow.FindObjectOfType<Ball>();
     }
 
     public override void Update()
     {
-        float centerOfScreen = GameWindow.Instance.RenderWindow.Size.Y / 2 - Collider.Bounds.Height;
-        float centerOfPaddlePosY = collider.Bounds.Top - collider.Bounds.Height / 2f;
+        HandleResize();
+        FollowBallAndIdleStrategy();
+        //FollowBallMoveStragety();
+    }
+
+    /// <summary>
+    /// Moves to center screen while ball is not on its half of the screen
+    /// </summary>
+    private void FollowBallAndIdleStrategy()
+    {
+        float centerOfScreen = GameWindow.Instance.RenderWindow.Size.Y / 2;
+        float centerOfPaddlePosY = collider.Bounds.Top + collider.Bounds.Height / 2f;
+        float targetPos = ballToWatch?.Position.Y ?? centerOfScreen;
+        if (ballToWatch?.PlayerHoldingBall == this)
+        {
+            if (curBallHoldingSeconds < BALL_HOLDING_SECONDS)
+            {
+                // move toward center screen on y
+                curBallHoldingSeconds += GameWindow.DeltaTime.AsSeconds();
+                targetPos = centerOfScreen;
+            }
+            else
+            {
+                ballToWatch.ReleaseBall();
+                curBallHoldingSeconds = 0.0f;
+            }
+        }
+        if 
+        (
+            !IsLeftSidePlayer && ballToWatch?.Position.X <= GameWindow.Instance.RenderWindow.Size.X / 2f
+            ||
+            IsLeftSidePlayer && ballToWatch?.Position.X > GameWindow.Instance.RenderWindow.Size.X / 2f
+        )
+        {
+            targetPos = centerOfScreen;
+        }
+        float simulatedYInput = 0f;
+        float threshold = 1.0f;  // Change this value based on what works best for your scenario
+        if (Math.Abs(centerOfPaddlePosY - targetPos) > threshold)
+        {
+            if (centerOfPaddlePosY < targetPos)
+            {
+                simulatedYInput = 1f;
+            }
+            else if (centerOfPaddlePosY > targetPos)
+            {
+                simulatedYInput = -1f;
+            }
+        }
+        Move(new Vector2f(0, simulatedYInput));
+        Position = new Vector2f(Position.X, Math.Clamp(Position.Y, 0, GameWindow.Instance.RenderWindow.Size.Y - Collider.Bounds.Height));
+    }
+
+    /// <summary>
+    /// Executes strategy to follow the ball on the Y axis 1:1 using the provided moveSpeed
+    /// </summary>
+    private void FollowBallMoveStragety()
+    {
+        float centerOfScreen = GameWindow.Instance.RenderWindow.Size.Y / 2 + Collider.Bounds.Height;
+        float centerOfPaddlePosY = collider.Bounds.Top + collider.Bounds.Height / 2f;
         float targetPos = ballToWatch?.Position.Y ?? centerOfScreen;
         if (ballToWatch?.PlayerHoldingBall == this)
         {
@@ -75,5 +133,16 @@ public class AIPaddle : Moveable
         }
         Move(new Vector2f(0, simulatedYInput));
         Position = new Vector2f(Position.X, Math.Clamp(Position.Y, 0, GameWindow.Instance.RenderWindow.Size.Y - Collider.Bounds.Height));
+    }
+    private void HandleResize()
+    {
+        if (IsLeftSidePlayer)
+        {
+            Position = new Vector2f(GameWindow.Size.X / 8f, Position.Y);
+        }
+        else
+        {
+            Position = new Vector2f(GameWindow.Size.X * 7f / 8f, Position.Y);
+        }
     }
 }

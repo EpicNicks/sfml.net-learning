@@ -50,7 +50,7 @@ public class ScoreText : UIAnchored
 
     public override List<Drawable> Drawables => [scoreText];
 
-    public override void Attach()
+    public override void Update()
     {
         scoreText.Position = PositionLocally(scoreText.GetLocalBounds());
     }
