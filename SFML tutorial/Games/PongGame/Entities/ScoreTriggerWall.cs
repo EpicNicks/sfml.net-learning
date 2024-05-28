@@ -7,7 +7,7 @@ public class ScoreTriggerWall : Positionable
 {
     private readonly Collider2D collider;
     private readonly bool isLeftTrigger;
-    private ScoreText.PlayerId? playerId;
+    private readonly ScoreText.PlayerId playerId;
     private ScoreText? scoreText;
 
     public ScoreTriggerWall(bool isLeftTrigger)
@@ -19,13 +19,13 @@ public class ScoreTriggerWall : Positionable
             PositionableGameObject = this,
             IsTrigger = true
         };
+        playerId = isLeftTrigger ? ScoreText.PlayerId.two : ScoreText.PlayerId.one;
     }
 
     public override Collider2D Collider => collider;
 
     public override void Attach()
     {
-        playerId = isLeftTrigger ? ScoreText.PlayerId.two : ScoreText.PlayerId.one;
         scoreText = GameWindow.FindObjectOfType<ScoreText>();
     }
 
@@ -43,8 +43,8 @@ public class ScoreTriggerWall : Positionable
     {
         if (other.PositionableGameObject is Ball ball)
         {
-            scoreText?.AddPointsToPlayer(playerId!, 1);
-            ball.ResetPosision(playerId!.Other);
+            scoreText?.AddPointsToPlayer(playerId, 1);
+            ball.ResetPosision(playerId.Other);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
-using System.Drawing;
 using static System.Math;
 namespace SFML_tutorial.BaseEngine.CoreLibs.Math;
 
@@ -15,7 +14,6 @@ public class Collisions
         LEFT,
         RIGHT
     }
-
 
     public static SideHit GetCollisionSide(Collider2D collider1, Collider2D collider2)
     {

@@ -21,6 +21,7 @@ public class Scene
 
     /// <summary>
     /// Initializes the scene with the initFunction provided, giving it the "Add" method.
+    /// Adds all objects passed to the callback function to the gameObjects List.
     /// This allows the scene to be recreated in the state the objects were originally constructed in.
     /// example usage:
     /// new Scene("'", (add) =>
@@ -64,18 +65,63 @@ public class Scene
         }
     }
 
-    public void RegisterToGameWindow()
+    public List<T> FindObjectsOfType<T>()
     {
-        // add to ordered scene list (a List<T> should suffice)
+        List<T> result = [];
+        foreach (var gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
+        {
+            if (gameObject is T t)
+            {
+                result.Add(t);
+            }
+        }
+        return result;
     }
 
-    public static void LoadNext()
+    public T? FindObjectOfType<T>(RenderLayer renderLayer)
     {
-
+        foreach (var gameObject in GameObjects[renderLayer])
+        {
+            if (gameObject is T t)
+            {
+                return t;
+            }
+        }
+        return default;
     }
 
-    public static void LoadScene(string name)
+    public T? FindObjectOfType<T>()
     {
+        foreach (var gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
+        {
+            if (gameObject is T t)
+            {
+                return t;
+            }
+        }
+        return default;
+    }
 
+    public bool TryRemove(RenderLayer renderLayer, GameObject gameObject)
+        => GameObjects.ContainsKey(renderLayer) && GameObjects[renderLayer].Remove(gameObject);
+    public bool TryRemove(GameObject gameObject)
+    {
+        foreach (RenderLayer key in GameObjects.Keys)
+        {
+            if (TryRemove(key, gameObject))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void Unload()
+    {
+        foreach (GameObject gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
+        {
+            gameObject.IsActive = false;
+        }
+        gameObjects.Clear();
     }
 }

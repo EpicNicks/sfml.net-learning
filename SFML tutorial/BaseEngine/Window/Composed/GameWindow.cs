@@ -19,13 +19,15 @@ public class GameWindow
     private static readonly Color CORNFLOWER_BLUE = new(147, 204, 234);
 
     private readonly Clock deltaClock = new();
-    // keys sorted in ascending order
-    private SortedDictionary<RenderLayer, List<GameObject>> gameObjects = new(Comparer<RenderLayer>.Create((l, r) => l - r));
     private SortedDictionary<RenderLayer, List<GameObject>> GameObjects
     {
         // TODO: handle scene loading next
-        get => gameObjects;
+        get => LoadedScene.GameObjects;
     }
+
+    private List<Scene> sceneList = [];
+    private int curSceneIndex = 0;
+    private Scene LoadedScene => sceneList[curSceneIndex];
 
     public Queue<GameObject> AttachQueue { get; private set; } = [];
 
@@ -58,86 +60,48 @@ public class GameWindow
         RenderWindow = new RenderWindow(new VideoMode(width, height), windowTitle);
     }
 
-    public static bool Contains(RenderLayer renderLayer, GameObject gameObject)
-    {
-        return Instance.GameObjects.ContainsKey(renderLayer) && Instance.GameObjects[renderLayer].Contains(gameObject);
-    }
-    public static bool Contains(GameObject gameObject)
-        => Instance.GameObjects.Keys.Any(renderLayer => Contains(renderLayer, gameObject));
+    public static bool Contains(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene.Contains(renderLayer, gameObject);
+    public static bool Contains(GameObject gameObject) => Instance.LoadedScene.Contains(gameObject);
+    public static void Add(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene.Add(renderLayer, gameObject);
+    public static void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects) => Instance.LoadedScene.Add(layeredGameObjects);
+    public static List<T> FindObjectsOfType<T>() => Instance.LoadedScene.FindObjectsOfType<T>();
+    public static T? FindObjectOfType<T>() => Instance.LoadedScene.FindObjectOfType<T>();
+    public static T? FindObjectOfType<T>(RenderLayer renderLayer) => Instance.LoadedScene.FindObjectOfType<T>(renderLayer);
+    public static bool TryRemove(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene.TryRemove(renderLayer, gameObject);
+    public static bool TryRemove(GameObject gameObject) => Instance.LoadedScene.TryRemove(gameObject);
 
-    public static void Add(RenderLayer renderLayer, GameObject gameObject)
+    public static string LoadedSceneName => Instance.LoadedScene.Name;
+
+    public static void AddScene(Scene scene)
     {
-        if (Contains(gameObject))
+        if (Instance.sceneList.Any(s => s.Name == scene.Name)) // Contains(scene) case logically covered here
         {
-            throw new InvalidOperationException("GameObject was already added to window!");
+            throw new InvalidOperationException($"Scene with name: {scene} was already in the list");
         }
-        if (Instance.GameObjects.TryGetValue(renderLayer, out List<GameObject>? value))
-        {
-            value.Add(gameObject);
-        }
-        else
-        {
-            Instance.GameObjects[renderLayer] = [gameObject];
-        }
-        Instance.AttachQueue.Enqueue(gameObject);
-    }
-    public static void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects)
-    {
-        foreach (var (renderLayer, gameObject) in layeredGameObjects)
-        {
-            Add(renderLayer, gameObject);
-        }
+        Instance.sceneList.Add(scene);
     }
 
-    public static T? FindObjectOfType<T>(RenderLayer renderLayer)
+    public static void LoadNextScene()
     {
-        foreach (var gameObject in Instance.GameObjects[renderLayer])
+        if (Instance.curSceneIndex + 1 >= Instance.sceneList.Count)
         {
-            if (gameObject is T t)
-            {
-                return t;
-            }
+            throw new InvalidOperationException("There was no next scene. Index is at or greater than Count of Scene List");
         }
-        return default;
+        Instance.LoadedScene.Unload();
+        Instance.curSceneIndex++;
+        Instance.LoadedScene.Init();
     }
 
-    public static List<T> FindObjectsOfType<T>()
+    public static void LoadScene(string name)
     {
-        List<T> result = [];
-        foreach (var gameObject in Instance.GameObjects.Keys.SelectMany(key => Instance.GameObjects[key]))
+        int namedSceneIndex = Instance.sceneList.FindIndex(scene => scene.Name == name);
+        if (namedSceneIndex == -1)
         {
-            if (gameObject is T t)
-            {
-                result.Add(t);
-            }
+            throw new InvalidOperationException($"No scene was found in the Scene List with the name: {name}");
         }
-        return result;
-    }
-
-    public static T? FindObjectOfType<T>()
-    {
-        foreach (var gameObject in Instance.GameObjects.Keys.SelectMany(key => Instance.GameObjects[key]))
-        {
-            if (gameObject is T t)
-            {
-                return t;
-            }
-        }
-        return default;
-    }
-
-    public static bool TryRemove(RenderLayer renderLayer, GameObject gameObject)
-        => Instance.GameObjects.ContainsKey(renderLayer) && Instance.GameObjects[renderLayer].Remove(gameObject);
-    public static bool TryRemove(GameObject gameObject)
-    {
-        foreach (RenderLayer key in Instance.GameObjects.Keys)
-        {
-            if (TryRemove(key, gameObject))
-            {
-                return true;
-            }
-        }
-        return false;
+        Instance.LoadedScene.Unload();
+        Instance.curSceneIndex = namedSceneIndex;
+        Instance.LoadedScene.Init();
     }
 
     public static void Run()
@@ -161,6 +125,7 @@ public class GameWindow
     {
         Instance.RenderWindow.SetFramerateLimit(120);
         InitStandardEvents();
+        Instance.LoadedScene.Init();
     }
     private static void InitStandardEvents()
     {
@@ -202,6 +167,7 @@ public class GameWindow
 
     // not performant to n^2 check every gameobject for colliders but oh well
     // also this is a discrete collision system because it's just righting objects which are inside other colliders
+    // TODO: extract out to Collision Engine module
     private static void HandleCollisions()
     {
         bool BothAreTriggers(Collider2D col1, Collider2D col2) => col1.IsTrigger && col2.IsTrigger;

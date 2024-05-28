@@ -16,34 +16,57 @@ public class PongMain
         GameWindow.WindowTitle = "Pong";
         // init general events for the game
 
-        GameWindow.Add(RenderLayer.UI, new ScoreText
+        GameWindow.Instance.RenderWindow.KeyPressed += (_, keyEvent) =>
         {
-            Position = new Vector2f(-20, 20),
-            Anchors = (UIAnchored.UIAnchor.CENTER, UIAnchored.UIAnchor.START)
-        });
-        GameWindow.Add(RenderLayer.NONE, new ColliderWall { IsTopWall = true });
-        GameWindow.Add(RenderLayer.NONE, new ColliderWall { IsTopWall = false });
-        GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(true));
-        GameWindow.Add(RenderLayer.NONE, new ScoreTriggerWall(false));
-        GameWindow.Add(RenderLayer.BASE, new Ball
+            if (keyEvent.Code == Keyboard.Key.M)
+            {
+                if (GameWindow.LoadedSceneName == "main game")
+                {
+                    GameWindow.LoadScene("main menu");
+                }
+                else if (GameWindow.LoadedSceneName == "main menu")
+                {
+                    GameWindow.LoadScene("main game");
+                }
+            }
+        };
+
+        GameWindow.AddScene(new Scene("main game", (add) =>
         {
-            MoveSpeed = 500f,
-        });
-        GameWindow.Add(RenderLayer.BASE, new PlayerPaddle
-        (
-            [Keyboard.Key.Up, Keyboard.Key.W],
-            [Keyboard.Key.Down, Keyboard.Key.S],
-            new Vector2f(20, 100)
-        )
+            add(RenderLayer.UI, new ScoreText
+            {
+                Position = new Vector2f(-20, 20),
+                Anchors = (UIAnchored.UIAnchor.CENTER, UIAnchored.UIAnchor.START)
+            });
+            add(RenderLayer.NONE, new ColliderWall { IsTopWall = true });
+            add(RenderLayer.NONE, new ColliderWall { IsTopWall = false });
+            add(RenderLayer.NONE, new ScoreTriggerWall(true));
+            add(RenderLayer.NONE, new ScoreTriggerWall(false));
+            add(RenderLayer.BASE, new Ball
+            {
+                MoveSpeed = 500f,
+            });
+            add(RenderLayer.BASE, new PlayerPaddle
+            (
+                [Keyboard.Key.Up, Keyboard.Key.W],
+                [Keyboard.Key.Down, Keyboard.Key.S],
+                new Vector2f(20, 100)
+            )
+            {
+                MoveSpeed = 700f,
+                IsLeftSidePlayer = true,
+            });
+            add(RenderLayer.BASE, new AIPaddle(new Vector2f(20, 100))
+            {
+                MoveSpeed = 320f,
+                IsLeftSidePlayer = false,
+            });
+        }));
+
+        GameWindow.AddScene(new Scene("main menu", (add) =>
         {
-            MoveSpeed = 700f,
-            IsLeftSidePlayer = true,
-        });
-        GameWindow.Add(RenderLayer.BASE, new AIPaddle(new Vector2f(20, 100))
-        {
-            MoveSpeed = 320f,
-            IsLeftSidePlayer = false,
-        });
+            add(RenderLayer.UI, new ScoreText());
+        }));
 
         GameWindow.Run();
     }
