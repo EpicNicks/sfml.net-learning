@@ -1,5 +1,4 @@
 ﻿using SFML_tutorial.BaseEngine.Window.Composed;
-
 using SFML_tutorial.Games.PongGame.UI;
 using SFML_tutorial.Games.PongGame.Entities;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
@@ -15,21 +14,6 @@ public class PongMain
     {
         GameWindow.WindowTitle = "Pong";
         // init general events for the game
-
-        GameWindow.Instance.RenderWindow.KeyPressed += (_, keyEvent) =>
-        {
-            if (keyEvent.Code == Keyboard.Key.M)
-            {
-                if (GameWindow.LoadedSceneName == "main game")
-                {
-                    GameWindow.LoadScene("main menu");
-                }
-                else if (GameWindow.LoadedSceneName == "main menu")
-                {
-                    GameWindow.LoadScene("main game");
-                }
-            }
-        };
 
         GameWindow.AddScene(new Scene("main game", (add) =>
         {
@@ -61,11 +45,6 @@ public class PongMain
                 MoveSpeed = 320f,
                 IsLeftSidePlayer = false,
             });
-        }));
-
-        GameWindow.AddScene(new Scene("main menu", (add) =>
-        {
-            add(RenderLayer.UI, new ScoreText());
         }));
 
         GameWindow.Run();

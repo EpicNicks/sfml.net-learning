@@ -22,12 +22,14 @@ public class GameWindow
     private SortedDictionary<RenderLayer, List<GameObject>> GameObjects
     {
         // TODO: handle scene loading next
-        get => LoadedScene.GameObjects;
+        get => LoadedScene?.GameObjects ?? [];
     }
 
     private List<Scene> sceneList = [];
     private int curSceneIndex = 0;
-    private Scene LoadedScene => sceneList[curSceneIndex];
+    // TODO - Unhandled: Initialization when there are no scenes in the list
+    // same goes for Add, TryRemove, and all others
+    private Scene? LoadedScene => curSceneIndex < sceneList.Count ? sceneList[curSceneIndex] : null;
 
     public Queue<GameObject> AttachQueue { get; private set; } = [];
 
@@ -60,17 +62,31 @@ public class GameWindow
         RenderWindow = new RenderWindow(new VideoMode(width, height), windowTitle);
     }
 
-    public static bool Contains(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene.Contains(renderLayer, gameObject);
-    public static bool Contains(GameObject gameObject) => Instance.LoadedScene.Contains(gameObject);
-    public static void Add(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene.Add(renderLayer, gameObject);
-    public static void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects) => Instance.LoadedScene.Add(layeredGameObjects);
-    public static List<T> FindObjectsOfType<T>() => Instance.LoadedScene.FindObjectsOfType<T>();
-    public static T? FindObjectOfType<T>() => Instance.LoadedScene.FindObjectOfType<T>();
-    public static T? FindObjectOfType<T>(RenderLayer renderLayer) => Instance.LoadedScene.FindObjectOfType<T>(renderLayer);
-    public static bool TryRemove(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene.TryRemove(renderLayer, gameObject);
-    public static bool TryRemove(GameObject gameObject) => Instance.LoadedScene.TryRemove(gameObject);
+    public static bool Contains(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene?.Contains(renderLayer, gameObject) ?? false;
+    public static bool Contains(GameObject gameObject) => Instance.LoadedScene?.Contains(gameObject) ?? false;
+    public static void Add(RenderLayer renderLayer, GameObject gameObject)
+    {
+        if (Instance.LoadedScene == null)
+        {
+            Console.Error.WriteLine("No scene was loaded to add the provided GameObject to");
+        }
+        Instance.LoadedScene?.Add(renderLayer, gameObject);
+    }
+    public static void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects)
+    {
+        if (Instance.LoadedScene == null)
+        {
+            Console.Error.WriteLine("No scene was loaded to add the provided GameObject to");
+        }
+        Instance.LoadedScene?.Add(layeredGameObjects);
+    }
+    public static List<T> FindObjectsOfType<T>() => Instance.LoadedScene?.FindObjectsOfType<T>() ?? [];
+    public static T? FindObjectOfType<T>() => Instance.LoadedScene is not null ? Instance.LoadedScene.FindObjectOfType<T>() : default;
+    public static T? FindObjectOfType<T>(RenderLayer renderLayer) => Instance.LoadedScene is not null ? Instance.LoadedScene.FindObjectOfType<T>(renderLayer) : default;
+    public static bool TryRemove(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene?.TryRemove(renderLayer, gameObject) ?? false;
+    public static bool TryRemove(GameObject gameObject) => Instance.LoadedScene?.TryRemove(gameObject) ?? false;
 
-    public static string LoadedSceneName => Instance.LoadedScene.Name;
+    public static string? LoadedSceneName => Instance.LoadedScene?.Name;
 
     public static void AddScene(Scene scene)
     {

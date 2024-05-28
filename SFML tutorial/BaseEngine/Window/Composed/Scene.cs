@@ -116,12 +116,21 @@ public class Scene
         return false;
     }
 
-    public void Unload()
+    public List<GameObject> Unload()
     {
+        List<GameObject> passForward = [];
         foreach (GameObject gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
         {
-            gameObject.IsActive = false;
+            if (gameObject.PersistOnSceneTransition)
+            {
+                passForward.Add(gameObject);
+            }
+            else
+            {
+                gameObject.IsActive = false;
+            }
         }
         gameObjects.Clear();
+        return passForward;
     }
 }
