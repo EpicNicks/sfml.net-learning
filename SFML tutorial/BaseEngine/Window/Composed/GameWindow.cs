@@ -99,13 +99,17 @@ public class GameWindow
 
     public static void LoadNextScene()
     {
+        if (Instance.LoadedScene is null)
+        {
+            throw new InvalidOperationException("There is no scene loaded currently of which the next should be loaded.");
+        }
         if (Instance.curSceneIndex + 1 >= Instance.sceneList.Count)
         {
             throw new InvalidOperationException("There was no next scene. Index is at or greater than Count of Scene List");
         }
-        Instance.LoadedScene.Unload();
+        var persistentGameObjects = Instance.LoadedScene?.Unload() ?? [];
         Instance.curSceneIndex++;
-        Instance.LoadedScene.Init();
+        Instance.LoadedScene?.Init(persistentGameObjects);
     }
 
     public static void LoadScene(string name)
@@ -115,9 +119,9 @@ public class GameWindow
         {
             throw new InvalidOperationException($"No scene was found in the Scene List with the name: {name}");
         }
-        Instance.LoadedScene.Unload();
+        var persistentGameObjects = Instance.LoadedScene?.Unload() ?? [];
         Instance.curSceneIndex = namedSceneIndex;
-        Instance.LoadedScene.Init();
+        Instance.LoadedScene?.Init(persistentGameObjects);
     }
 
     public static void Run()
@@ -141,7 +145,14 @@ public class GameWindow
     {
         Instance.RenderWindow.SetFramerateLimit(120);
         InitStandardEvents();
-        Instance.LoadedScene.Init();
+        if (Instance.LoadedScene is null)
+        {
+            Console.Error.WriteLine("No initial scene to load provided to GameWindow. Consider calling AddScene with a Scene to load.");
+        }
+        else
+        {
+            Instance.LoadedScene.Init([]);
+        }
     }
     private static void InitStandardEvents()
     {

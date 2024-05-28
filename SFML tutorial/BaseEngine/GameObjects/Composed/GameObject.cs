@@ -10,11 +10,14 @@ namespace SFML_tutorial.BaseEngine.GameObjects.Composed;
 /// </summary>
 public class GameObject
 {
+    public record struct Persistance(bool persistOnSceneTransition, long persistId);
     /// <summary>
     /// Tells the scene if it should pass forward the instance of the GameObject created when the scene transitions to a new scene.
+    /// Assigning a unique ID for the engine to know that the GameObject being recreated is the one which has already been created.
     /// Useful for GameObjects which contain globals or otherwise are lifetime objects such as singletons.
     /// </summary>
-    public virtual bool PersistOnSceneTransition { get; set; } = false;
+    public virtual Persistance PersistanceInfo { get; set; } = new Persistance(false, 0L);
+
     /// <summary>
     /// To be used by the GameWindow to not process inactive GameObjects
     /// </summary>

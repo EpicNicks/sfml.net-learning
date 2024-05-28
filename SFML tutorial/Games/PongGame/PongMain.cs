@@ -1,10 +1,12 @@
 ﻿using SFML_tutorial.BaseEngine.Window.Composed;
+
 using SFML_tutorial.Games.PongGame.UI;
 using SFML_tutorial.Games.PongGame.Entities;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 
 using SFML.System;
 using SFML.Window;
+using SFML_tutorial.BaseEngine.GameObjects.Composed;
 
 namespace SFML_tutorial.Games.PongGame;
 
@@ -15,12 +17,28 @@ public class PongMain
         GameWindow.WindowTitle = "Pong";
         // init general events for the game
 
+        GameWindow.Instance.RenderWindow.KeyPressed += (_, keyEvent) =>
+        {
+            if (keyEvent.Code == Keyboard.Key.M)
+            {
+                if (GameWindow.LoadedSceneName == "main game")
+                {
+                    GameWindow.LoadScene("main menu");
+                }
+                else if (GameWindow.LoadedSceneName == "main menu")
+                {
+                    GameWindow.LoadScene("main game");
+                }
+            }
+        };
+
         GameWindow.AddScene(new Scene("main game", (add) =>
         {
             add(RenderLayer.UI, new ScoreText
             {
                 Position = new Vector2f(-20, 20),
-                Anchors = (UIAnchored.UIAnchor.CENTER, UIAnchored.UIAnchor.START)
+                Anchors = (UIAnchored.UIAnchor.CENTER, UIAnchored.UIAnchor.START),
+                PersistanceInfo = new GameObject.Persistance(true, 7331L)
             });
             add(RenderLayer.NONE, new ColliderWall { IsTopWall = true });
             add(RenderLayer.NONE, new ColliderWall { IsTopWall = false });
@@ -45,6 +63,10 @@ public class PongMain
                 MoveSpeed = 320f,
                 IsLeftSidePlayer = false,
             });
+        }));
+
+        GameWindow.AddScene(new Scene("main menu", (add) =>
+        {
         }));
 
         GameWindow.Run();

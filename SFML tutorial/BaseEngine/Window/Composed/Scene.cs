@@ -1,4 +1,5 @@
 ﻿using SFML_tutorial.BaseEngine.GameObjects.Composed;
+using SFML_tutorial.BaseEngine.GameObjects.ExternalState.StateDict;
 
 namespace SFML_tutorial.BaseEngine.Window.Composed;
 
@@ -10,6 +11,7 @@ public class Scene
     private readonly string name;
     public string Name => name;
     private readonly Action<Action<RenderLayer, GameObject>> initFunction;
+    private List<GameObject> persistRefs = [];
     private SortedDictionary<RenderLayer, List<GameObject>> gameObjects = new(Comparer<RenderLayer>.Create((l, r) => l - r));
     public SortedDictionary<RenderLayer, List<GameObject>> GameObjects => gameObjects;
 
@@ -29,8 +31,9 @@ public class Scene
     ///     add(RenderLayerEnumValue, new SomeGameObjectDerivedClass);
     /// });
     /// </summary>
-    public void Init()
+    public void Init(List<(RenderLayer renderLayer, GameObject gameObject)> persistentGameObjects)
     {
+        AddPersistent(persistentGameObjects);
         initFunction(Add);
     }
 
@@ -41,8 +44,37 @@ public class Scene
     public bool Contains(GameObject gameObject)
         => GameObjects.Keys.Any(renderLayer => Contains(renderLayer, gameObject));
 
+    private void AddPersistent(List<(RenderLayer renderLayer, GameObject gameObject)> persistentGameObjects)
+    {
+        foreach ((RenderLayer renderLayer, GameObject gameObject) in persistentGameObjects)
+        {
+            if (GameObjects.TryGetValue(renderLayer, out List<GameObject>? value))
+            {
+                value.Add(gameObject);
+            }
+            else
+            {
+                GameObjects[renderLayer] = [gameObject];
+            }
+        }
+    }
+
     public void Add(RenderLayer renderLayer, GameObject gameObject)
     {
+        // handle home of Persistent Game Objects
+        if (gameObject.PersistanceInfo.persistOnSceneTransition)
+        {
+            if (persistRefs.Where(go => go.PersistanceInfo.persistId == gameObject.PersistanceInfo.persistId).Any())
+            {
+                // no need to continue adding
+                return;
+            }
+            else
+            {
+                // add for next load and proceed to add as normal
+                persistRefs.Add(gameObject);
+            }
+        }
         if (Contains(gameObject))
         {
             throw new InvalidOperationException("GameObject was already added to window!");
@@ -116,18 +148,21 @@ public class Scene
         return false;
     }
 
-    public List<GameObject> Unload()
+    public List<(RenderLayer renderLayer, GameObject gameObject)> Unload()
     {
-        List<GameObject> passForward = [];
-        foreach (GameObject gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
+        List<(RenderLayer renderLayer, GameObject gameObject)> passForward = [];
+        foreach (RenderLayer key in GameObjects.Keys)
         {
-            if (gameObject.PersistOnSceneTransition)
+            foreach (GameObject gameObject in GameObjects[key])
             {
-                passForward.Add(gameObject);
-            }
-            else
-            {
-                gameObject.IsActive = false;
+                if (gameObject.PersistanceInfo.persistOnSceneTransition)
+                {
+                    passForward.Add((key, gameObject));
+                }
+                else
+                {
+                    gameObject.IsActive = false;
+                }
             }
         }
         gameObjects.Clear();
