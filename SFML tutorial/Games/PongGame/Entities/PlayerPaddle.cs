@@ -80,6 +80,7 @@ public class PlayerPaddle : Moveable
     {
         static int IfTrueThen(bool b, int value) => b ? value : 0;
         float yVelocity = 0 + IfTrueThen(upKeys.Any(key => pressedKeys[key]), -1) + IfTrueThen(downKeys.Any(key => pressedKeys[key]), 1);
+        yVelocity *= GameWindow.Size.Y / 800; // scaled compared to the original window size of x=1200 y=800
         Move(new Vector2f(0, yVelocity));
         Position = new Vector2f(Position.X, Math.Clamp(Position.Y, 0, GameWindow.Size.Y - Collider.Bounds.Height));
     }
@@ -88,11 +89,11 @@ public class PlayerPaddle : Moveable
     {
         if (IsLeftSidePlayer)
         {
-            Position = new Vector2f(GameWindow.Size.X / 8f, Position.Y);
+            Position = new Vector2f(200, Position.Y);
         }
         else
         {
-            Position = new Vector2f(GameWindow.Size.X * 7f / 8f, Position.Y);
+            Position = new Vector2f(GameWindow.Size.X - 200, Position.Y);
         }
     }
 }

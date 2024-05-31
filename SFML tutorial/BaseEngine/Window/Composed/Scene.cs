@@ -10,12 +10,15 @@ public class Scene
 {
     private readonly string name;
     public string Name => name;
-    private readonly Action<Action<RenderLayer, GameObject>> initFunction;
+
+    public delegate void AddCallback(params (RenderLayer renderLayer, GameObject gameObject)[] layeredGameObjects);
+
+    private readonly Action<AddCallback> initFunction;
     private List<GameObject> persistRefs = [];
     private SortedDictionary<RenderLayer, List<GameObject>> gameObjects = new(Comparer<RenderLayer>.Create((l, r) => l - r));
     public SortedDictionary<RenderLayer, List<GameObject>> GameObjects => gameObjects;
 
-    public Scene(string name, Action<Action<RenderLayer, GameObject>> initFunction)
+    public Scene(string name, Action<AddCallback> initFunction)
     {
         this.name = name;
         this.initFunction = initFunction;
@@ -26,15 +29,15 @@ public class Scene
     /// Adds all objects passed to the callback function to the gameObjects List.
     /// This allows the scene to be recreated in the state the objects were originally constructed in.
     /// example usage:
-    /// new Scene("'", (add) =>
+    /// new Scene("some scene", (add) =>
     /// {
-    ///     add(RenderLayerEnumValue, new SomeGameObjectDerivedClass);
+    ///     add((RenderLayerEnumValue, new SomeGameObjectDerivedClass));
     /// });
     /// </summary>
     public void Init(List<(RenderLayer renderLayer, GameObject gameObject)> persistentGameObjects)
     {
         AddPersistent(persistentGameObjects);
-        initFunction(Add);
+        initFunction(layeredGameObject => Add(layeredGameObject.ToList()));
     }
 
     public bool Contains(RenderLayer renderLayer, GameObject gameObject)

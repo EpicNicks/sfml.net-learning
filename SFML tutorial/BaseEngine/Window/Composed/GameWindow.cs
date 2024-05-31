@@ -9,6 +9,17 @@ namespace SFML_tutorial.BaseEngine.Window.Composed;
 public class GameWindow
 {
     /// <summary>
+    /// Used by GameObjects not written to the UI or NONE RenderLayers.
+    /// Move around to move the "main camera".
+    /// </summary>
+    public View MainView { get; private set; }
+    /// <summary>
+    /// Used by GameObjects written to the UI RenderLayer.
+    /// Not really meant to be moved about like MainView but can be.
+    /// </summary>
+    public View UiView { get; private set; }
+
+    /// <summary>
     /// The underlying SFML.NET RenderWindow object
     /// </summary>
     public RenderWindow RenderWindow { get; private set; }
@@ -44,6 +55,10 @@ public class GameWindow
     /// </summary>
     public static Vector2u Size => Instance.RenderWindow.Size;
     /// <summary>
+    /// The Aspect Ratio of the window (Width / Height)
+    /// </summary>
+    public static float AspectRatio => Size.X / Size.Y;
+    /// <summary>
     /// The time elapsed since the previous frame was drawn
     /// </summary>
     public static Time DeltaTime { get; private set; } = default;
@@ -60,6 +75,11 @@ public class GameWindow
     {
         (uint width, uint height) = (1200, 800);
         RenderWindow = new RenderWindow(new VideoMode(width, height), windowTitle);
+        MainView = new View(new FloatRect(0, 0, width, height))
+        {
+            Viewport = new FloatRect(0, 0, 1, 1)
+        };
+        UiView = RenderWindow.DefaultView;
     }
 
     public static bool Contains(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene?.Contains(renderLayer, gameObject) ?? false;
@@ -170,7 +190,15 @@ public class GameWindow
         };
         Instance.RenderWindow.Resized += (sender, sizeEvent) =>
         {
-            Instance.RenderWindow.SetView(new View(new FloatRect(0, 0, sizeEvent.Width, sizeEvent.Height)));
+            // Update the viewport of the main view to maintain aspect ratio or full scale
+            Instance.MainView.Size = new Vector2f(sizeEvent.Width, sizeEvent.Height);  // Optional: maintain aspect ratio
+            Instance.MainView.Viewport = new FloatRect(0, 0, 1, 1);  // Always render the world view across the entire window
+
+            // Update the UI view to match the new window size for direct screen space mapping
+            Instance.UiView.Reset(new FloatRect(0, 0, sizeEvent.Width, sizeEvent.Height));
+
+            // Update the window's view to the modified main view after resizing
+            Instance.RenderWindow.SetView(Instance.MainView);
         };
     }
 
@@ -295,11 +323,34 @@ public class GameWindow
     private static void Render()
     {
         Instance.RenderWindow.Clear(WindowBackgroundColor);
-        OnEachGameObject((gameObject) => gameObject.Drawables.ForEach((drawable) => Instance.RenderWindow.Draw(drawable)));
+        OnEachGameObject((renderLayer, gameObject) => gameObject.Drawables.ForEach(drawable =>
+        {
+            if (renderLayer == RenderLayer.NONE)
+            {
+                return;
+            }
+            else if (renderLayer != RenderLayer.UI)
+            {
+                // convert screen space to world space on non-UI objects?
+                Instance.RenderWindow.SetView(Instance.MainView);
+            }
+            else
+            {
+                Instance.RenderWindow.SetView(Instance.UiView);
+            }
+            Instance.RenderWindow.Draw(drawable);
+        }));
         Instance.RenderWindow.Display();
     }
 
     private static List<GameObject> ActiveGameObjects => Instance.GameObjects.Keys.SelectMany(key => Instance.GameObjects[key]).Where(gameObject => gameObject.IsActive).ToList();
+    private static List<(RenderLayer renderLayer, GameObject gameObject)> ActiveLayeredGameObjects => 
+        Instance.GameObjects.Keys
+            .SelectMany(key => 
+                Instance.GameObjects[key]
+                    .Where(gameObject => gameObject.IsActive)
+                    .Select(gameObject => (key, gameObject))
+            ).ToList();
 
     // layers should be iterated over in the correct order due to the SortedDictionary calling Render on lower layers first
     /// <summary>
@@ -310,6 +361,11 @@ public class GameWindow
     private static void OnEachGameObject(Action<GameObject> doOnEach)
     {
         ActiveGameObjects.ForEach(doOnEach);
+    }
+
+    private static void OnEachGameObject(Action<RenderLayer, GameObject> doOnEach)
+    {
+        ActiveLayeredGameObjects.ForEach(renderLayerGoTuple => doOnEach(renderLayerGoTuple.renderLayer, renderLayerGoTuple.gameObject));
     }
 
     private static Action<Action<GameObject>> OnEachGameObjectWhere(Func<GameObject, bool> predicate)
