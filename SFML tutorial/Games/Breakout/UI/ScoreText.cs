@@ -18,7 +18,13 @@ public class ScoreText : UIAnchored
         {
             if (value > score)
             {
+                StopAllCoroutines();
                 StartCoroutine(ScoreColorFlashGood());
+            }
+            if (value < score)
+            {
+                StopAllCoroutines();
+                StartCoroutine(ScoreColorFlashBad());
             }
             score = value;
         }
@@ -51,6 +57,17 @@ public class ScoreText : UIAnchored
         scoreText.FillColor = Color.White;
         yield return new WaitForSeconds(0.1f);
         scoreText.FillColor = Color.Green;
+        yield return new WaitForSeconds(0.1f);
+        scoreText.FillColor = Color.White;
+    }
+
+    private IEnumerator ScoreColorFlashBad()
+    {
+        scoreText.FillColor = Color.Red;
+        yield return new WaitForSeconds(0.1f);
+        scoreText.FillColor = Color.White;
+        yield return new WaitForSeconds(0.1f);
+        scoreText.FillColor = Color.Red;
         yield return new WaitForSeconds(0.1f);
         scoreText.FillColor = Color.White;
     }

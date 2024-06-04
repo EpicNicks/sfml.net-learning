@@ -6,6 +6,7 @@ using SFML.Window;
 
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.GameObjects.Composed;
+using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 
 namespace SFML_tutorial.BaseEngine.Window.Composed;
 
@@ -154,9 +155,19 @@ public class GameWindow
         Instance.LoadedScene?.Init(persistentGameObjects);
     }
 
-    public static void StartCoroutine(GameObject gameObject, IEnumerator routine)
+    public static Coroutine? StartCoroutine(GameObject gameObject, IEnumerator routine)
     {
-        Instance.LoadedScene?.StartCoroutine(gameObject, routine);
+        return Instance.LoadedScene?.StartCoroutine(gameObject, routine);
+    }
+
+    public static bool StopCoroutine(GameObject gameObject, Coroutine coroutine)
+    {
+        return Instance.LoadedScene?.StopCoroutine(gameObject, coroutine) ?? false;
+    }
+
+    public static void StopAllCoroutines(GameObject gameObject)
+    {
+        Instance.LoadedScene?.StopAllCoroutines(gameObject);
     }
 
     public static void Run()

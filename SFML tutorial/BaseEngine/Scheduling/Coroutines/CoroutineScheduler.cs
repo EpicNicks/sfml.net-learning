@@ -32,7 +32,13 @@ public class CoroutineScheduler
         CleanupCompleted(coroutinesToRemove);
     }
 
-    public void StartCoroutine(GameObject gameObject, IEnumerator routine)
+    /// <summary>
+    /// Starts a Coroutine from an IEnumerator on the specified GameObject.
+    /// </summary>
+    /// <param name="gameObject">The GameObject to attach the Coroutine to</param>
+    /// <param name="routine">The IEnumerator routine to start as a Coroutine</param>
+    /// <returns></returns>
+    public Coroutine StartCoroutine(GameObject gameObject, IEnumerator routine)
     {
         Coroutine coroutine = new Coroutine(routine);
         if (Coroutines.TryGetValue(gameObject, out List<Coroutine>? value))
@@ -42,6 +48,34 @@ public class CoroutineScheduler
         else
         {
             Coroutines[gameObject] = [coroutine];
+        }
+        return coroutine;
+    }
+
+    /// <summary>
+    /// Stops the running Coroutine by removing it from the CoroutineScheduler's Update loop.
+    /// </summary>
+    /// <param name="gameObject">The GameObject the Coroutine is attached to</param>
+    /// <param name="coroutine">The Coroutine to stop</param>
+    /// <returns></returns>
+    public bool StopCoroutine(GameObject gameObject, Coroutine coroutine)
+    {
+        if (Coroutines.TryGetValue(gameObject, out List<Coroutine>? value))
+        {
+            return value.Remove(coroutine);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Stops all running Coroutines on the specified GameObject
+    /// </summary>
+    /// <param name="gameObject">The GameObject to stop all executing Coroutines on</param>
+    public void StopAllCoroutines(GameObject gameObject)
+    {
+        if (Coroutines.TryGetValue(gameObject, out List<Coroutine>? value))
+        {
+            value.Clear();
         }
     }
 

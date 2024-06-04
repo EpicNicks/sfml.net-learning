@@ -38,7 +38,6 @@ public class PlayerPaddle : Moveable
     public override void Attach()
     {
         scoreText = GameWindow.FindObjectOfType<ScoreText>();
-        StartCoroutine(TestScore());
         GameWindow.Instance.RenderWindow.KeyPressed += OnKeyPressed;
         GameWindow.Instance.RenderWindow.KeyReleased += OnKeyReleased;
     }
@@ -53,18 +52,6 @@ public class PlayerPaddle : Moveable
     {
         Move(new(-pressedKeys[Key.A].ToInt() + pressedKeys[Key.D].ToInt(), 0));
         Position = Position.ClampX(0, 1200 - rectangleShape.Size.X);
-    }
-
-    private IEnumerator TestScore()
-    {
-        while (true)
-        {
-            if (scoreText is not null)
-            {
-                yield return new WaitForSeconds(3);
-                scoreText.Score += 5;
-            }
-        }
     }
 
     public override List<Drawable> Drawables => [rectangleShape];

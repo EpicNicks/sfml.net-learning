@@ -163,11 +163,29 @@ public class Scene
         return false;
     }
 
-    public void StartCoroutine(GameObject gameObject, IEnumerator routine)
+    public Coroutine? StartCoroutine(GameObject gameObject, IEnumerator routine)
     {
         if (gameObjects.Keys.SelectMany(key => gameObjects[key]).Contains(gameObject))
         {
-            coroutineScheduler.StartCoroutine(gameObject, routine);
+            return coroutineScheduler.StartCoroutine(gameObject, routine);
+        }
+        return null;
+    }
+
+    public bool StopCoroutine(GameObject gameObject, Coroutine coroutine)
+    {
+        if (gameObjects.Keys.SelectMany(key => gameObjects[key]).Contains(gameObject))
+        {
+            return coroutineScheduler.StopCoroutine(gameObject, coroutine);
+        }
+        return false;
+    }
+
+    public void StopAllCoroutines(GameObject gameObject)
+    {
+        if (gameObjects.Keys.SelectMany(key => gameObjects[key]).Contains(gameObject))
+        {
+            coroutineScheduler.StopAllCoroutines(gameObject);
         }
     }
 

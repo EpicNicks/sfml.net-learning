@@ -3,6 +3,7 @@
 using SFML.Graphics;
 
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
+using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 using SFML_tutorial.BaseEngine.Window.Composed;
 
 namespace SFML_tutorial.BaseEngine.GameObjects.Composed;
@@ -66,9 +67,36 @@ public class GameObject
     /// Equivalent to GameWindow::StartCoroutine(GameObject gameObject, IEnumerator routine)
     /// </summary>
     /// <param name="routine">The IEnumerator routine to start</param>
-    public void StartCoroutine(IEnumerator routine)
+    public Coroutine? StartCoroutine(IEnumerator routine)
     {
-        GameWindow.StartCoroutine(this, routine);
+        return GameWindow.StartCoroutine(this, routine);
+    }
+
+    /// <summary>
+    /// Method to allow GameObjects to remove Coroutines from themselves easily.
+    /// Equivalent to GameWindow::StopCoroutine(GameObject gameObject, Coroutine coroutine)
+    /// </summary>
+    /// <param name="coroutine"></param>
+    public void StopCoroutine(Coroutine coroutine)
+    {
+        GameWindow.StopCoroutine(this, coroutine);
+    }
+
+    /// <summary>
+    /// Stops all running Coroutines on itself
+    /// Equivalent to GameWindow::StopAllCoroutines(GameObject gameObject)
+    /// </summary>
+    public void StopAllCoroutines()
+    {
+        GameWindow.StopAllCoroutines(this);
+    }
+
+    /// <summary>
+    /// Destroys the current GameObject (currently just removes it from the scene, triggering its OnDestroy)
+    /// </summary>
+    public void Destroy()
+    {
+        GameWindow.TryRemove(this);
     }
 
     // TODO: should also handle "marked for destruction" once implemented
