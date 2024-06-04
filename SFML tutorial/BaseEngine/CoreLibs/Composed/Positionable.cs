@@ -5,6 +5,10 @@ using SFML_tutorial.BaseEngine.GameObjects.Composed;
 
 namespace SFML_tutorial.BaseEngine.CoreLibs.Composed;
 
+/// <summary>
+/// The base class for GameObjects which have a position.
+/// Provides a base field implementation Vector2f 'Position' which handles itself, its collider, and all underlying drawables.
+/// </summary>
 public class Positionable: GameObject
 {
     private Vector2f position = new Vector2f();

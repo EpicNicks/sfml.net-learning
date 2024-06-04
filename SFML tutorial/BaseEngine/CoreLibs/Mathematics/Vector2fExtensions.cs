@@ -3,7 +3,7 @@ using SFML.System;
 
 using static System.Math;
 
-namespace SFML_tutorial.BaseEngine.CoreLibs.Math;
+namespace SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 
 public static class Vector2fExtensions
 {

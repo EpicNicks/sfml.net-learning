@@ -54,26 +54,36 @@ public class PlayerPaddle : Moveable
     public override void Attach()
     {
         Position = new Vector2f(Position.X, GameWindow.Size.Y / 2f);
-        GameWindow.Instance.RenderWindow.KeyPressed += (_, e) =>
-        {
-            if (pressedKeys.ContainsKey(e.Code))
-            {
-                pressedKeys[e.Code] = true;
-            }
-        };
-        GameWindow.Instance.RenderWindow.KeyReleased += (_, e) =>
-        {
-            if (pressedKeys.ContainsKey(e.Code))
-            {
-                pressedKeys[e.Code] = false;
-            }
-        };
+        GameWindow.Instance.RenderWindow.KeyPressed += HandleKeyPress;
+        GameWindow.Instance.RenderWindow.KeyReleased += HandleKeyRelease;
     }
 
     public override void Update()
     {
         HandleResize();
         HandleMove();
+    }
+
+    public override void OnDestroy()
+    {
+        GameWindow.Instance.RenderWindow.KeyPressed -= HandleKeyPress;
+        GameWindow.Instance.RenderWindow.KeyReleased -= HandleKeyRelease;
+    }
+
+
+    private void HandleKeyPress(object? _, KeyEventArgs e)
+    {
+        if (pressedKeys.ContainsKey(e.Code))
+        {
+            pressedKeys[e.Code] = true;
+        }
+    }
+    private void HandleKeyRelease(object? _, KeyEventArgs e)
+    {
+        if (pressedKeys.ContainsKey(e.Code))
+        {
+            pressedKeys[e.Code] = false;
+        }
     }
 
     private void HandleMove()

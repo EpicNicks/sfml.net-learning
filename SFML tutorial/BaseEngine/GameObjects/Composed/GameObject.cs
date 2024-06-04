@@ -51,4 +51,9 @@ public class GameObject
     public virtual void OnTriggerEnter2D(Collider2D other) { }
     public virtual void OnTriggerStay2D(Collider2D other) { }
     public virtual void OnTriggerExit2D(Collider2D other) { }
+
+    /// <summary>
+    /// For handling any cleanup which should occur when an object is destroyed
+    /// </summary>
+    public virtual void OnDestroy() { }
 }

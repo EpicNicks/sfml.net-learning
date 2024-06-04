@@ -137,14 +137,22 @@ public class Scene
         return default;
     }
 
-    public bool TryRemove(RenderLayer renderLayer, GameObject gameObject)
-        => GameObjects.ContainsKey(renderLayer) && GameObjects[renderLayer].Remove(gameObject);
+    public bool TryRemove(RenderLayer renderLayer, GameObject gameObject) 
+    {
+        if (GameObjects.TryGetValue(renderLayer, out List<GameObject>? value))
+        {
+            gameObject.OnDestroy();
+            return value.Remove(gameObject);
+        }
+        return false;
+    }
     public bool TryRemove(GameObject gameObject)
     {
         foreach (RenderLayer key in GameObjects.Keys)
         {
             if (TryRemove(key, gameObject))
             {
+                gameObject.OnDestroy();
                 return true;
             }
         }
@@ -164,7 +172,7 @@ public class Scene
                 }
                 else
                 {
-                    gameObject.IsActive = false;
+                    gameObject.OnDestroy();
                 }
             }
         }

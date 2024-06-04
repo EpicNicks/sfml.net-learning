@@ -2,7 +2,7 @@
 using SFML.System;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using static System.Math;
-namespace SFML_tutorial.BaseEngine.CoreLibs.Math;
+namespace SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 
 public class Collisions
 {

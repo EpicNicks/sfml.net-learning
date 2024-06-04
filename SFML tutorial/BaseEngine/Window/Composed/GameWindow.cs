@@ -30,6 +30,7 @@ public class GameWindow
     private static readonly Color CORNFLOWER_BLUE = new(147, 204, 234);
 
     private readonly Clock deltaClock = new();
+    private readonly Clock timeClock = new();
     private SortedDictionary<RenderLayer, List<GameObject>> GameObjects
     {
         // TODO: handle scene loading next
@@ -62,6 +63,11 @@ public class GameWindow
     /// The time elapsed since the previous frame was drawn
     /// </summary>
     public static Time DeltaTime { get; private set; } = default;
+
+    /// <summary>
+    /// The time elapsed since GameWindow.Run() has been called
+    /// </summary>
+    public static Time Time => Instance.timeClock.ElapsedTime;
 
     private static GameWindow? instance;
     public static GameWindow Instance => instance ??= new GameWindow();
@@ -153,7 +159,12 @@ public class GameWindow
             ProcessAttachQueue();
             Update();
             HandleCollisions();
-            Render();
+            // handle scene switch on an event occuring in its own thread such that elements are drawn before their Attach method is called
+            //  because otherwise, the entire AttachQueue should have already been processed before Render could have been called
+            if (Instance.AttachQueue.Count == 0)
+            {
+                Render();
+            }
         }
     }
 
@@ -164,6 +175,7 @@ public class GameWindow
     private static void Init()
     {
         Instance.RenderWindow.SetFramerateLimit(120);
+        Instance.timeClock.Restart();
         InitStandardEvents();
         if (Instance.LoadedScene is null)
         {

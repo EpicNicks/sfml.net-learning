@@ -2,7 +2,7 @@
 using SFML.System;
 using SFML.Window;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
-using SFML_tutorial.BaseEngine.CoreLibs.Math;
+using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.Games.PongGame.UI;
 

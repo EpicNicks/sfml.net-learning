@@ -1,7 +1,6 @@
 ﻿using SFML.Graphics;
 using SFML.System;
-using SFML_tutorial.BaseEngine.CoreLibs.Math;
-using static System.Math;
+using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 
 namespace SFML_tutorial.BaseEngine.CoreLibs.Composed;
 
