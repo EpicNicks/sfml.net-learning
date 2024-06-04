@@ -77,9 +77,9 @@ public class GameObject
     /// Equivalent to GameWindow::StopCoroutine(GameObject gameObject, Coroutine coroutine)
     /// </summary>
     /// <param name="coroutine"></param>
-    public void StopCoroutine(Coroutine coroutine)
+    public bool StopCoroutine(Coroutine coroutine)
     {
-        GameWindow.StopCoroutine(this, coroutine);
+        return GameWindow.StopCoroutine(this, coroutine);
     }
 
     /// <summary>
@@ -92,11 +92,12 @@ public class GameObject
     }
 
     /// <summary>
-    /// Destroys the current GameObject (currently just removes it from the scene, triggering its OnDestroy)
+    /// Destroys the current GameObject (currently just removes it from the scene, triggering its OnDestroy).
     /// </summary>
-    public void Destroy()
+    /// <returns>true if the GameObject was successfully destroyed.</returns>
+    public bool Destroy()
     {
-        GameWindow.TryRemove(this);
+        return GameWindow.TryRemove(this);
     }
 
     // TODO: should also handle "marked for destruction" once implemented
