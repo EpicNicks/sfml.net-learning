@@ -40,7 +40,7 @@ public class Scene
     public void Init(List<(RenderLayer renderLayer, GameObject gameObject)> persistentGameObjects)
     {
         AddPersistent(persistentGameObjects);
-        initFunction(layeredGameObject => Add(layeredGameObject.ToList()));
+        initFunction(Add);
     }
 
     public bool Contains(RenderLayer renderLayer, GameObject gameObject)
@@ -95,7 +95,7 @@ public class Scene
         }
         GameWindow.Instance.AttachQueue.Enqueue(gameObject);
     }
-    public void Add(List<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects)
+    public void Add(IEnumerable<(RenderLayer renderLayer, GameObject gameObject)> layeredGameObjects)
     {
         foreach (var (renderLayer, gameObject) in layeredGameObjects)
         {
@@ -176,6 +176,10 @@ public class Scene
         coroutineScheduler.Update();
     }
 
+    /// <summary>
+    /// Destroys all non-persistent GameObjects in the Scene
+    /// </summary>
+    /// <returns>All persistent GameObjects in the Scene to pass forward</returns>
     public List<(RenderLayer renderLayer, GameObject gameObject)> Unload()
     {
         List<(RenderLayer renderLayer, GameObject gameObject)> passForward = [];

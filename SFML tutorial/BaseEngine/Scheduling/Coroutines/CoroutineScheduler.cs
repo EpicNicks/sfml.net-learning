@@ -16,9 +16,11 @@ public class CoroutineScheduler
     public void Update()
     {
         List<(GameObject, Coroutine)> coroutinesToRemove = [];
-        foreach (GameObject gameObject in Coroutines.Keys)
+        var gameObjects = Coroutines.Keys.ToList();
+
+        foreach (GameObject gameObject in gameObjects)
         {
-            foreach (Coroutine coroutine in Coroutines[gameObject])
+            foreach (Coroutine coroutine in Coroutines[gameObject].ToList())
             {
                 bool isComplete = AdvanceCoroutine(coroutine);
                 if (isComplete)

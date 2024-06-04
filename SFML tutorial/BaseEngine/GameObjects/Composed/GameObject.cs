@@ -70,4 +70,10 @@ public class GameObject
     {
         GameWindow.StartCoroutine(this, routine);
     }
+
+    // TODO: should also handle "marked for destruction" once implemented
+    public static implicit operator bool(GameObject? gameObject)
+    {
+        return gameObject is not null;
+    }
 }

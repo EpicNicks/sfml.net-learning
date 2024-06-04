@@ -13,6 +13,7 @@ using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.BaseEngine.GameObjects.Composed;
 using SFML_tutorial.Games.PongGame;
 using SFML_tutorial.Games.TownTest;
+using SFML_tutorial.Games.Breakout;
 
 namespace SFML_tutorial;
 
@@ -29,8 +30,9 @@ public class Program
 
     public static void Main()
     {
-        //PongMain.Run();
-        TownTestMain.Run();
+        // PongMain.Run();
+        // TownTestMain.Run();
+        BreakoutMain.Run();
     }
 
     private static void RunComposedVersion()
