@@ -1,5 +1,7 @@
 ﻿using SFML_tutorial.BaseEngine.GameObjects.Composed;
 using SFML_tutorial.BaseEngine.GameObjects.ExternalState.StateDict;
+using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
+using System.Collections;
 
 namespace SFML_tutorial.BaseEngine.Window.Composed;
 
@@ -14,6 +16,7 @@ public class Scene
     public delegate void AddCallback(params (RenderLayer renderLayer, GameObject gameObject)[] layeredGameObjects);
 
     private readonly Action<AddCallback> initFunction;
+    private CoroutineScheduler coroutineScheduler = new CoroutineScheduler();
     private List<GameObject> persistRefs = [];
     private SortedDictionary<RenderLayer, List<GameObject>> gameObjects = new(Comparer<RenderLayer>.Create((l, r) => l - r));
     public SortedDictionary<RenderLayer, List<GameObject>> GameObjects => gameObjects;
@@ -137,6 +140,7 @@ public class Scene
         return default;
     }
 
+    // Call the Coroutine Scheduler to remove all Coroutines associated with the GameObject
     public bool TryRemove(RenderLayer renderLayer, GameObject gameObject) 
     {
         if (GameObjects.TryGetValue(renderLayer, out List<GameObject>? value))
@@ -157,6 +161,19 @@ public class Scene
             }
         }
         return false;
+    }
+
+    public void StartCoroutine(GameObject gameObject, IEnumerator routine)
+    {
+        if (gameObjects.Keys.SelectMany(key => gameObjects[key]).Contains(gameObject))
+        {
+            coroutineScheduler.StartCoroutine(gameObject, routine);
+        }
+    }
+
+    public void UpdateCoroutines()
+    {
+        coroutineScheduler.Update();
     }
 
     public List<(RenderLayer renderLayer, GameObject gameObject)> Unload()

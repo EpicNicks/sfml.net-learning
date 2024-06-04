@@ -1,5 +1,9 @@
-﻿using SFML.Graphics;
+﻿using System.Collections;
+
+using SFML.Graphics;
+
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
+using SFML_tutorial.BaseEngine.Window.Composed;
 
 namespace SFML_tutorial.BaseEngine.GameObjects.Composed;
 
@@ -56,4 +60,14 @@ public class GameObject
     /// For handling any cleanup which should occur when an object is destroyed
     /// </summary>
     public virtual void OnDestroy() { }
+
+    /// <summary>
+    /// Method to allow GameObjects to add Coroutines from themselves easily.
+    /// Equivalent to GameWindow::StartCoroutine(GameObject gameObject, IEnumerator routine)
+    /// </summary>
+    /// <param name="routine">The IEnumerator routine to start</param>
+    public void StartCoroutine(IEnumerator routine)
+    {
+        GameWindow.StartCoroutine(this, routine);
+    }
 }

@@ -1,6 +1,9 @@
-﻿using SFML.Graphics;
+﻿using System.Collections;
+
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.GameObjects.Composed;
 
@@ -150,6 +153,11 @@ public class GameWindow
         Instance.LoadedScene?.Init(persistentGameObjects);
     }
 
+    public static void StartCoroutine(GameObject gameObject, IEnumerator routine)
+    {
+        Instance.LoadedScene?.StartCoroutine(gameObject, routine);
+    }
+
     public static void Run()
     {
         Init();
@@ -229,6 +237,7 @@ public class GameWindow
     private static void Update()
     {
         Instance.RenderWindow.DispatchEvents();
+        Instance.LoadedScene?.UpdateCoroutines();
         OnEachGameObject((gameObject) => gameObject.Update());
     }
 

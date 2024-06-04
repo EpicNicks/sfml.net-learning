@@ -7,6 +7,8 @@ using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 using SFML_tutorial.BaseEngine.CoreLibs.SFMLExtensions;
+using System.Collections;
+using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 
 namespace SFML_tutorial.Games.TownTest.Entities;
 public class Player : Moveable
@@ -34,6 +36,17 @@ public class Player : Moveable
     {
         GameWindow.Instance.RenderWindow.KeyPressed += HandleKeyPress;
         GameWindow.Instance.RenderWindow.KeyReleased += HandleKeyRelease;
+
+        StartCoroutine(ColorChange());
+    }
+
+    private IEnumerator ColorChange()
+    {
+        PlayerColor = Color.Green;
+        yield return new WaitForSeconds(2f);
+        PlayerColor = Color.Cyan;
+        yield return null;
+        PlayerColor = Color.Red;
     }
 
     public override void OnDestroy()
@@ -45,7 +58,7 @@ public class Player : Moveable
     public override void Update()
     {
         Move(new Vector2f(-pressedKeys[Key.A].ToInt() + pressedKeys[Key.D].ToInt(), -pressedKeys[Key.W].ToInt() + pressedKeys[Key.S].ToInt()));
-        PlayerColor = ColorExtensions.PingPong(Color.Red, Color.Blue, GameWindow.Time.AsSeconds(), 2);
+        // PlayerColor = ColorExtensions.PingPong(Color.Red, Color.Blue, GameWindow.Time.AsSeconds(), 2);
 
         // track linearly, can smoothstep the Position for every frame we update the center or whatever other follow behaviour one might prefer
         GameWindow.Instance.MainView.Center = Position;
