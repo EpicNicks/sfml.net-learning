@@ -23,6 +23,7 @@ public class ColliderWall : Positionable
         debugRect = new RectangleShape
         {
             OutlineColor = Color.Green,
+            OutlineThickness = 1,
             Size = bounds.Size(),
             Position = bounds.Position()
         };

@@ -28,7 +28,7 @@ public class PlayerPaddle : Moveable
         };
         collider = new()
         {
-            IsStatic = false,
+            IsStatic = true,
             PositionableGameObject = this,
             Bounds = bounds,
             IsTrigger = false

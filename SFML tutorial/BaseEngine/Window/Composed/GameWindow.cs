@@ -134,7 +134,7 @@ public class GameWindow
         {
             throw new InvalidOperationException("There is no scene loaded currently of which the next should be loaded.");
         }
-        if (Instance.curSceneIndex + 1 >= Instance.sceneList.Count)
+        if (!HasNextScene())
         {
             throw new InvalidOperationException("There was no next scene. Index is at or greater than Count of Scene List");
         }
@@ -154,6 +154,8 @@ public class GameWindow
         Instance.curSceneIndex = namedSceneIndex;
         Instance.LoadedScene?.Init(persistentGameObjects);
     }
+
+    public static bool HasNextScene() => Instance.curSceneIndex + 1 < Instance.sceneList.Count;
 
     public static Coroutine? StartCoroutine(GameObject gameObject, IEnumerator routine)
     {

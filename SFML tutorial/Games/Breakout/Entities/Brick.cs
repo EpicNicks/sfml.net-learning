@@ -18,14 +18,14 @@ public class Brick : Positionable
     private readonly Collider2D collider;
     private readonly RectangleShape rectangleShape;
 
-    public Brick(FloatRect bounds, Color color, int hitsToDestroy, int pointValue)
+    public Brick(FloatRect bounds, int hitsToDestroy, int pointValue)
     {
         this.hitsToDestroy = hitsToDestroy;
         this.pointValue = pointValue;
         Position = bounds.Position();
         rectangleShape = new RectangleShape
         {
-            FillColor = color,
+            FillColor = ColorFromRemainingHits(),
             Position = bounds.Position(),
             Size = bounds.Size(),
         };
@@ -50,6 +50,7 @@ public class Brick : Positionable
         if (other.PositionableGameObject is Ball)
         {
             hitsTaken++;
+            rectangleShape.FillColor = ColorFromRemainingHits();
         }
         if (hitsTaken >= hitsToDestroy && scoreText is not null)
         {
@@ -57,4 +58,13 @@ public class Brick : Positionable
             Destroy();
         }
     }
+
+    private Color ColorFromRemainingHits() => (hitsToDestroy - hitsTaken) switch
+    {
+        3 => Color.Cyan,
+        2 => Color.Yellow,
+        1 => Color.Red,
+        0 => Color.Black, // should be destroyed already
+        _ => Color.White // placeholder/error value
+    };
 }

@@ -11,13 +11,16 @@ public class Ball : Moveable
 {
     private readonly CircleShape circle;
     private readonly Collider2D collider;
+    // righward and upward
+    private readonly Vector2f INITIAL_VELOCITY = new Vector2f(0.5f, -1);
 
-    private Vector2f moveVelocity = new Vector2f(1, 1);
+    private Vector2f moveVelocity;
     private PlayerPaddle? playerPaddle;
     private bool playerIsHoldingBall;
 
     public Ball()
     {
+        moveVelocity = INITIAL_VELOCITY;
         float circleRadius = 5f;
         circle = new CircleShape
         {
@@ -78,7 +81,7 @@ public class Ball : Moveable
     {
         if (playerIsHoldingBall && playerPaddle is not null)
         {
-            Position = playerPaddle.Position + new Vector2f(20, playerPaddle.Collider.Bounds.Height / 2);
+            Position = playerPaddle.Position + new Vector2f(playerPaddle.Collider.Bounds.Width / 2, -20);
         }
         else
         {
@@ -98,7 +101,7 @@ public class Ball : Moveable
     private void SetInitialPosition()
     {
         playerIsHoldingBall = true;
-        moveVelocity = new(1, -1); // righward and upward
+        moveVelocity = INITIAL_VELOCITY;
     }
 
     private void ReleaseBall()
