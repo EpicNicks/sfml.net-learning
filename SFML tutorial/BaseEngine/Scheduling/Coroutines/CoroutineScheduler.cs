@@ -3,7 +3,8 @@ using System.Collections;
 
 namespace SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 /// <summary>
-/// Simple Dictionary-based scheduler
+/// Simple Dictionary-based scheduler.
+/// You probably don't have enough concurrently scheduled Coroutines to warrant a data structure with more overhead but better big O time complexity for large N.
 /// </summary>
 public class CoroutineScheduler
 {

@@ -6,7 +6,6 @@ using static SFML.Window.Keyboard;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
-using SFML_tutorial.BaseEngine.CoreLibs.SFMLExtensions;
 using System.Collections;
 using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 
@@ -37,15 +36,16 @@ public class Player : Moveable
         GameWindow.Instance.RenderWindow.KeyPressed += HandleKeyPress;
         GameWindow.Instance.RenderWindow.KeyReleased += HandleKeyRelease;
 
-        StartCoroutine(ColorChange());
+        StartCoroutine(TestColorChange());
     }
 
-    private IEnumerator ColorChange()
+    private IEnumerator TestColorChange()
     {
+        yield return new WaitForSeconds(1);
         PlayerColor = Color.Green;
         yield return new WaitForSeconds(2f);
         PlayerColor = Color.Cyan;
-        yield return null;
+        yield return new WaitForFrames(30);
         PlayerColor = Color.Red;
     }
 

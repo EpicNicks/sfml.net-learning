@@ -34,6 +34,26 @@ public class WaitForNextFrame : ICoroutineWait
 }
 
 /// <summary>
+/// Used in IEnumerators wrapped by Coroutines to tell it to delay execution to nth frame after the current frame.
+/// Unsure of what the usecase of this would be given a dynamic framerate aside from directly interacting with the framerate itself.
+/// </summary>
+public class WaitForFrames(uint waitFrames) : ICoroutineWait
+{
+    private readonly uint waitFrames = waitFrames;
+    private uint waitCalledCount = 0;
+
+    public bool Wait()
+    {
+        if (waitCalledCount < waitFrames)
+        {
+            waitCalledCount++;
+            return true;
+        }
+        return false;
+    }
+}
+
+/// <summary>
 /// Used in IEnumerators wrapped by Coroutines to tell it to delay execution until waitSeconds has elapsed.
 /// </summary>
 /// <param name="waitSeconds">The number of seconds to wait</param>
