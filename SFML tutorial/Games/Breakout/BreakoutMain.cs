@@ -11,6 +11,8 @@ using SFML_tutorial.Properties;
 namespace SFML_tutorial.Games.Breakout;
 public static class BreakoutMain
 {
+    public const int GAME_WIDTH = 1200;
+    public const int GAME_HEIGHT = 800;
     public static void Run()
     {
         GameWindow.WindowTitle = "Breakout";
@@ -26,14 +28,23 @@ public static class BreakoutMain
 
     private static (RenderLayer, GameObject)[] LevelObjects()
     {
-        return 
+        return
         [
             // walls
-            (RenderLayer.BASE, new ColliderWall(new(0, -100, GameWindow.Instance.MainView.Size.X, 100), true)),
-            (RenderLayer.BASE, new ColliderWall(new(GameWindow.Instance.MainView.Size.X, 0, 100, GameWindow.Instance.MainView.Size.Y), true)),
-            (RenderLayer.BASE, new ColliderWall(new(-100, 0, 100, GameWindow.Instance.MainView.Size.Y), true)),
+            (RenderLayer.BASE, new ColliderWall(new(0, -100, GAME_WIDTH, 100), true)), // top wall
+            (RenderLayer.BASE, new ColliderWall(new(GAME_WIDTH, 0, 100, GAME_HEIGHT), true)), // right wall
+            (RenderLayer.BASE, new ColliderWall(new(-100, 0, 100, GAME_HEIGHT), true)), // left wall
+            (RenderLayer.BASE, new FailureTrigger(new(0, GAME_HEIGHT, GAME_WIDTH, 100), true)), // bottom trigger
 
-            (RenderLayer.BASE, new Ball { MoveSpeed = 500f })
+            (RenderLayer.BASE, new Ball
+            {
+                MoveSpeed = 500f
+            }),
+
+            (RenderLayer.UI, new TriesText(5)
+            {
+                Position = new(-50, -50),
+            })
         ];
     }
 

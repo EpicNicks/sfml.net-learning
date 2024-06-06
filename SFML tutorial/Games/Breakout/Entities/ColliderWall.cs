@@ -22,6 +22,7 @@ public class ColliderWall : Positionable
         };
         debugRect = new RectangleShape
         {
+            FillColor = Color.Black,
             OutlineColor = Color.Green,
             OutlineThickness = 1,
             Size = bounds.Size(),

@@ -5,6 +5,7 @@ using SFML.Window;
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 using SFML_tutorial.BaseEngine.Window.Composed;
+using SFML_tutorial.Games.Breakout.UI;
 
 namespace SFML_tutorial.Games.Breakout.Entities;
 public class Ball : Moveable
@@ -91,8 +92,8 @@ public class Ball : Moveable
 
     private void HandleOOB()
     {
-        Vector2f gameWindowSize = GameWindow.Instance.MainView.Size;
-        if (Position.X < -10 || Position.X > gameWindowSize.X + 10 || Position.Y < -10 || Position.Y > gameWindowSize.Y + 10)
+        Vector2f gameWindowSize = new Vector2f(BreakoutMain.GAME_WIDTH, BreakoutMain.GAME_HEIGHT);
+        if (Position.X < -100 || Position.X > gameWindowSize.X + 100 || Position.Y < -30 || Position.Y > gameWindowSize.Y + 100)
         {
             SetInitialPosition();
         }
