@@ -26,6 +26,8 @@ public class Brick : Positionable
         rectangleShape = new RectangleShape
         {
             FillColor = ColorFromRemainingHits(),
+            OutlineColor = ColorFromHits(hitsToDestroy),
+            OutlineThickness = 1,
             Position = bounds.Position(),
             Size = bounds.Size(),
         };
@@ -59,7 +61,7 @@ public class Brick : Positionable
         }
     }
 
-    private Color ColorFromRemainingHits() => (hitsToDestroy - hitsTaken) switch
+    private Color ColorFromHits(int hits) => hits switch
     {
         3 => Color.Cyan,
         2 => Color.Yellow,
@@ -67,4 +69,6 @@ public class Brick : Positionable
         0 => Color.Black, // should be destroyed already
         _ => Color.White // placeholder/error value
     };
+
+    private Color ColorFromRemainingHits() => ColorFromHits(hitsToDestroy - hitsTaken);
 }

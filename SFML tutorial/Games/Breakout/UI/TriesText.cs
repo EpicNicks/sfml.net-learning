@@ -1,9 +1,11 @@
-﻿using SFML.Graphics;
+﻿using System.Collections;
+
+using SFML.Graphics;
 
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
+using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.Properties;
-using System.Collections;
 
 namespace SFML_tutorial.Games.Breakout.UI;
 public class TriesText : UIAnchored
@@ -32,7 +34,7 @@ public class TriesText : UIAnchored
                     }
                     if (value == 0)
                     {
-                        // GameWindow.LoadScene(gameOverSceneName);
+                        GameWindow.LoadScene(gameOverSceneName);
                     }
                 }
             }
@@ -41,16 +43,20 @@ public class TriesText : UIAnchored
     }
     private readonly int maximumTries;
     private readonly Text displayText;
+    private readonly string gameOverSceneName;
 
-    public TriesText(int maximumTries)
+    public TriesText(int maximumTries, string gameOverSceneName)
     {
         this.maximumTries = maximumTries;
+        this.gameOverSceneName = gameOverSceneName;
         CurrentTriesAmount = maximumTries;
         displayText = new Text
         {
             Font = new(Resources.Roboto_Black),
             CharacterSize = 24,
             FillColor = Color.White,
+            OutlineColor = Color.Black,
+            OutlineThickness = 1,
         };
     }
     public override void Update()

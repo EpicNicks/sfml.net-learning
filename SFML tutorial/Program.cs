@@ -14,6 +14,7 @@ using SFML_tutorial.BaseEngine.GameObjects.Composed;
 using SFML_tutorial.Games.PongGame;
 using SFML_tutorial.Games.TownTest;
 using SFML_tutorial.Games.Breakout;
+using SFML_tutorial.Games.TetrisGame;
 
 namespace SFML_tutorial;
 
@@ -32,7 +33,8 @@ public class Program
     {
         // PongMain.Run();
         // TownTestMain.Run();
-        BreakoutMain.Run();
+        // BreakoutMain.Run();
+        TetrisMain.Run();
     }
 
     private static void RunComposedVersion()

@@ -4,6 +4,7 @@ using SFML.Graphics;
 
 using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
+using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.Properties;
 
 namespace SFML_tutorial.Games.Breakout.UI;
@@ -42,7 +43,8 @@ public class ScoreText : UIAnchored
 
     public override void Update()
     {
-        scoreText.DisplayedString = Score.ToString();
+        scoreText.DisplayedString = (GameWindow.LoadedSceneName == "Game Over" || GameWindow.LoadedSceneName == "Victory Screen") 
+            ? $"Final Score: {Score}" : Score.ToString();
         scoreText.Position = PositionLocally(scoreText.GetLocalBounds());
     }
 

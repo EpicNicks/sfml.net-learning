@@ -29,4 +29,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Games\TetrisGame\UI\" />
+  </ItemGroup>
+
 </Project>

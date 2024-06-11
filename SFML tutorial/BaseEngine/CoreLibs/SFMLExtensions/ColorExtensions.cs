@@ -20,4 +20,9 @@ public static class ColorExtensions
     {
         return Lerp(color1, color2, Math.PingPong(time, cycleDuration) / cycleDuration);
     }
+
+    public static Color Random(Random rnd)
+    {
+        return new Color(unchecked((uint)rnd.Next(int.MaxValue)));
+    }
 }

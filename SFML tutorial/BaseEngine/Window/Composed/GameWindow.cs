@@ -59,7 +59,7 @@ public class GameWindow
     /// <summary>
     /// A shortener for the common Instance.RenderWindow.Size get
     /// </summary>
-    public static Vector2u Size => Instance.RenderWindow.Size;
+    public static Vector2u Size { get => Instance.RenderWindow.Size; set => Instance.RenderWindow.Size = value; }
     /// <summary>
     /// The Aspect Ratio of the window (Width / Height)
     /// </summary>

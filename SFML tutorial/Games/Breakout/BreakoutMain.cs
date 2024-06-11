@@ -16,12 +16,14 @@ public static class BreakoutMain
     public static void Run()
     {
         GameWindow.WindowTitle = "Breakout";
+        GameWindow.Size = new(GAME_WIDTH, GAME_HEIGHT);
 
         GameWindow.AddScene(SetupLevel());
         GameWindow.AddScene(Level1());
         GameWindow.AddScene(Level2());
 
         GameWindow.AddScene(VictoryScreen());
+        GameWindow.AddScene(GameOverScreen());
 
         GameWindow.Run();
     }
@@ -30,6 +32,7 @@ public static class BreakoutMain
     {
         return
         [
+            (RenderLayer.NONE, new BrickManager()),
             // walls
             (RenderLayer.BASE, new ColliderWall(new(0, -100, GAME_WIDTH, 100), true)), // top wall
             (RenderLayer.BASE, new ColliderWall(new(GAME_WIDTH, 0, 100, GAME_HEIGHT), true)), // right wall
@@ -38,10 +41,10 @@ public static class BreakoutMain
 
             (RenderLayer.BASE, new Ball
             {
-                MoveSpeed = 500f
+                MoveSpeed = 600f
             }),
 
-            (RenderLayer.UI, new TriesText(5)
+            (RenderLayer.UI, new TriesText(5, "Game Over")
             {
                 Position = new(-50, -50),
             })
@@ -53,15 +56,7 @@ public static class BreakoutMain
     {
         return new Scene("__setup", add =>
         {
-            add((RenderLayer.NONE, new BrickManager
-            {
-                PersistanceInfo = new GameObject.Persistance
-                {
-                    persistId = 8008135L,
-                    persistOnSceneTransition = true,
-                }
-            }));
-            add((RenderLayer.BASE, new PlayerPaddle(new(600 - 50, 800 - 50, 100, 20))
+            add((RenderLayer.BASE, new PlayerPaddle(new(GAME_WIDTH / 2f - 50, GAME_HEIGHT - 50, 100, 20))
             {
                 MoveSpeed = 500,
                 PersistanceInfo = new GameObject.Persistance
@@ -88,11 +83,11 @@ public static class BreakoutMain
         return new Scene("Level 1", add =>
         {
             add(LevelObjects());
-            GenerateFloatRectRow(10, 200, 300, 20, new Vector2f(50, 20)).ForEach((bounds) =>
+            GenerateFloatRectRow(amount: 10, 250, 300, spaceBetween: 20, new Vector2f(50, 20)).ForEach((bounds) =>
             {
                 add((RenderLayer.BASE, new Brick(bounds, 1, 1)));
             });
-            GenerateFloatRectRow(7, 300, 200, 20, new Vector2f(50, 20)).ForEach((bounds) =>
+            GenerateFloatRectRow(7, 350, 200, 20, new Vector2f(50, 20)).ForEach((bounds) =>
             {
                 add((RenderLayer.BASE, new Brick(bounds, 2, 3)));
             });
@@ -122,6 +117,11 @@ public static class BreakoutMain
             {
                 ball.MoveSpeed = 800;
             }
+            PlayerPaddle? playerPaddle = GameWindow.FindObjectOfType<PlayerPaddle>();
+            if (playerPaddle is not null)
+            {
+                playerPaddle.MoveSpeed = 800;
+            }
         });
     }
 
@@ -143,6 +143,26 @@ public static class BreakoutMain
             }));
         });
     }
+
+    private static Scene GameOverScreen()
+    {
+        return new Scene("Game Over", add =>
+        {
+            Text drawableText = new Text
+            {
+                DisplayedString = "YOU LOSE",
+                CharacterSize = 48,
+                FillColor = Color.White,
+                Font = new(Resources.Roboto_Black)
+            };
+            add((RenderLayer.UI, new Positionable
+            {
+                Drawables = [drawableText],
+                Position = new(GameWindow.Instance.UiView.Size.X / 2f - drawableText.GetLocalBounds().Width / 2f, GameWindow.Instance.UiView.Size.Y / 2f - drawableText.GetLocalBounds().Height / 2f),
+            }));
+        });
+    }
+
     private static List<FloatRect> GenerateFloatRectRow(int amount, float startingXPos, float yPos, float spaceBetween, Vector2f size)
     {
         List<FloatRect> output = [];
