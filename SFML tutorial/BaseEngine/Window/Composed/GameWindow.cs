@@ -4,7 +4,6 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-using SFML_tutorial.BaseEngine.CoreLibs.Composed;
 using SFML_tutorial.BaseEngine.GameObjects.Composed;
 using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 
@@ -181,12 +180,7 @@ public class GameWindow
             ProcessAttachQueue();
             Update();
             Instance.collisionSystem.HandleCollisions(ActiveGameObjects);
-            // handle scene switch on an event occuring in its own thread such that elements are drawn before their Attach method is called
-            //  because otherwise, the entire AttachQueue should have already been processed before Render could have been called
-            if (Instance.AttachQueue.Count == 0)
-            {
-                Render();
-            }
+            Render();
         }
     }
 

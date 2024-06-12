@@ -76,7 +76,7 @@ public sealed class Tetromino : Positionable
                     shapesRet.Add(new RectangleShape(new Vector2f(BLOCK_SIZE - BLOCK_MARGIN, BLOCK_SIZE - BLOCK_MARGIN))
                     {
                         FillColor = Color, // Set the color of the tetromino block
-                        Position = Position + new Vector2f(x * BLOCK_SIZE, y * BLOCK_SIZE)
+                        Position = Position + new Vector2f(x * BLOCK_SIZE, y * BLOCK_SIZE),
                     });
                     if (shapesRet.Count == 4) break; // early break, stop adding blocks once we have four
                 }
