@@ -24,6 +24,11 @@ public class GameObject
     public virtual Persistance PersistanceInfo { get; set; } = new Persistance(false, 0L);
 
     /// <summary>
+    /// The optional name of the GameObject for finding it in the Scene along GameObject of the same type
+    /// </summary>
+    public virtual string? Name { get; set; }
+
+    /// <summary>
     /// To be used by the GameWindow to not process inactive GameObjects
     /// </summary>
     public virtual bool IsActive { get; set; } = true;

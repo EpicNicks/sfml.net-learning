@@ -110,9 +110,13 @@ public class GameWindow
         }
         Instance.LoadedScene?.Add(layeredGameObjects);
     }
-    public static List<T> FindObjectsOfType<T>() => Instance.LoadedScene?.FindObjectsOfType<T>() ?? [];
-    public static T? FindObjectOfType<T>() => Instance.LoadedScene is not null ? Instance.LoadedScene.FindObjectOfType<T>() : default;
-    public static T? FindObjectOfType<T>(RenderLayer renderLayer) => Instance.LoadedScene is not null ? Instance.LoadedScene.FindObjectOfType<T>(renderLayer) : default;
+    public static List<T> FindObjectsOfType<T>() where T : GameObject 
+        => Instance.LoadedScene?.FindObjectsOfType<T>() ?? [];
+    public static T? FindObjectOfType<T>(string? name = null) where T : GameObject 
+        => Instance.LoadedScene?.FindObjectOfType<T>(name);
+    public static T? FindObjectOfType<T>(RenderLayer renderLayer) where T : GameObject
+        => Instance.LoadedScene?.FindObjectOfType<T>(renderLayer);
+    public static GameObject? FindObject(string name) => Instance.LoadedScene?.FindObject(name);
     public static bool TryRemove(RenderLayer renderLayer, GameObject gameObject) => Instance.LoadedScene?.TryRemove(renderLayer, gameObject) ?? false;
     public static bool TryRemove(GameObject gameObject) => Instance.LoadedScene?.TryRemove(gameObject) ?? false;
 

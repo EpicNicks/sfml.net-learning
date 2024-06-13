@@ -14,7 +14,7 @@ public class Coroutine
     /// <summary>
     /// Advances the inner IEnumerator to the next yield
     /// </summary>
-    /// <returns>Whether or not the coroutine has code left to execute</returns>
+    /// <returns>true if the coroutine has completed execution, false otherwise</returns>
     public bool MoveNext()
     {
         #region Check Result Of Last Call If Exists

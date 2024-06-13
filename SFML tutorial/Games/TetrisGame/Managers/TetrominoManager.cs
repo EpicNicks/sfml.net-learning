@@ -9,37 +9,68 @@ using SFML_tutorial.BaseEngine.Window.Composed;
 using SFML_tutorial.Games.TetrisGame.Entities;
 using SFML_tutorial.BaseEngine.CoreLibs.Debugging;
 using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
+using System.Collections;
+using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
+using SFML_tutorial.Games.TetrisGame.UI;
 
 namespace SFML_tutorial.Games.TetrisGame.Managers;
 public class TetrominoManager : GameObject
 {
     private readonly Random rnd;
-    private readonly Dictionary<Key, bool> keysPressedDict = Moveable.KeysToPressedDict([Key.Left, Key.A, Key.Right, Key.D]);
+    /// <summary>
+    /// Keys which can be held
+    /// </summary>
+    private readonly Dictionary<Key, bool> keysPressedDict = Moveable.KeysToPressedDict([Key.Left, Key.A, Key.Right, Key.D, Key.S, Key.Down]);
 
-    private List<Tetromino> placedTetrominoes = [];
+    private List<RectangleShape> placedRectangles = [];
     private Tetromino? activeTetromino;
     private Queue<Tetromino> nextTetrominoes = [];
     /// <summary>
     /// Can be decreased over time to increase game speed
     /// </summary>
+    private float baseMovesPerSecond = 1.0f;
     private float movesPerSecond;
     private float moveSecondsElapsed;
-    private bool activeTetrominoWasTouchingLastFrame = false;
+    private readonly int FRAMES_BEFORE_TETROMINO_PLACED = 1;
+    private int activeTetrominoPlacedFrames = 0;
     private bool isGameOver = false;
+    private bool isPaused;
+
+    private ScoreText? scoreText;
+    private UIAnchoredText? pauseText;
+    private UIAnchoredText? gameOverText;
+
+    private static Vector2f AdvanceTetrominoDelta => new(0, Tetromino.BLOCK_SIZE);
 
     public TetrominoManager()
     {
         rnd = new Random();
     }
 
+    public override List<Drawable> Drawables => placedRectangles.Select(r => (Drawable)r).ToList();
+
     public override void Attach()
     {
-        movesPerSecond = 0.1f;
+        scoreText = GameWindow.FindObjectOfType<ScoreText>();
+        pauseText = GameWindow.FindObjectOfType<UIAnchoredText>("Pause Text");
+        gameOverText = GameWindow.FindObjectOfType<UIAnchoredText>("Game Over Text");
+
+        if (pauseText is not null)
+        {
+            pauseText.IsActive = false;
+        }
+        if (gameOverText is not null)
+        {
+            gameOverText.IsActive = false;
+        }
+
+        movesPerSecond = baseMovesPerSecond * 0.5f;
         foreach (var _ in Enumerable.Range(0, 10))
         {
             nextTetrominoes.Enqueue(Tetromino.Random(rnd));
         }
         RegisterInputEvents();
+        StartCoroutine(HandleInput());
     }
 
     public override void OnDestroy()
@@ -49,11 +80,12 @@ public class TetrominoManager : GameObject
 
     public override void Update()
     {
+        if (pauseText is not null)
+        {
+            pauseText.IsActive = isPaused;
+        }
         UpdateTetrominoes();
-        HandleInput();
-        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT));
-        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT));
-        Debug.DrawLineSegment(new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT));
+        DrawDebugBounds();
     }
 
     private void RegisterInputEvents()
@@ -74,6 +106,18 @@ public class TetrominoManager : GameObject
         {
             keysPressedDict[keyEvent.Code] = true;
         }
+        else if (keyEvent.Code == Key.E)
+        {
+            RotateActiveTetromino();
+        }
+        else if (keyEvent.Code == Key.Q)
+        {
+            RotateActiveTetromino(false);
+        }
+        else if (keyEvent.Code == Key.P)
+        {
+            isPaused = !isPaused;
+        }
     }
     private void OnKeyReleased(object? _, KeyEventArgs keyEvent)
     {
@@ -89,10 +133,14 @@ public class TetrominoManager : GameObject
         {
             return;
         }
+        if (isPaused)
+        {
+            return;
+        }
         if (activeTetromino is null)
         {
             activeTetromino = nextTetrominoes.Dequeue();
-            activeTetromino.Position = new(TetrisMain.GAME_WIDTH / 2f, 0);
+            activeTetromino.Position = new(TetrisMain.GAME_WIDTH / 2f, TetrisMain.CEILING_HEIGHT - Tetromino.BLOCK_SIZE * 4);
             GameWindow.Add(RenderLayer.BASE, activeTetromino);
             nextTetrominoes.Enqueue(Tetromino.Random(rnd));
         }
@@ -105,50 +153,196 @@ public class TetrominoManager : GameObject
             }
             moveSecondsElapsed = 0;
             // try move
-            activeTetromino.Position += AdvanceTetrominoDelta();
-            if (placedTetrominoes.Any(activeTetromino.IsColliding) || TetrominoIsTouchingFloor(activeTetromino))
+            activeTetromino.Position += AdvanceTetrominoDelta;
+            if (activeTetromino.IsColliding(placedRectangles) || TetrominoIsTouchingFloor(activeTetromino))
             {
                 // undo move
-                activeTetromino.Position -= AdvanceTetrominoDelta();
-                if (activeTetrominoWasTouchingLastFrame)
+                activeTetromino.Position -= AdvanceTetrominoDelta;
+                if (activeTetrominoPlacedFrames >= FRAMES_BEFORE_TETROMINO_PLACED)
                 {
+                    // place Tetromino
                     if (TetrominoIsPlacedAboveCieling(activeTetromino))
                     {
                         isGameOver = true;
                     }
-                    placedTetrominoes.Add(activeTetromino);
+                    placedRectangles.AddRange(activeTetromino.Rectangles.Select(r =>
+                    {
+                        r.Position = new((int)System.Math.Round(r.Position.X), (int)System.Math.Round(r.Position.Y));
+                        return r;
+                    }));
+                    activeTetrominoPlacedFrames = 0;
+                    activeTetromino.Destroy();
                     activeTetromino = null;
+                    ClearCompleteRows();
                 }
                 else
                 {
-                    activeTetrominoWasTouchingLastFrame = true;
+                    activeTetrominoPlacedFrames++;
                 }
             }
         }
     }
 
-    private void HandleInput()
+    private void DrawDebugBounds()
     {
-        // might want an input step (cooldown) so pressing and holding doesn't move like crazy
-        float lrInput = -keysPressedDict[Key.A].ToInt() + -keysPressedDict[Key.Left].ToInt() + keysPressedDict[Key.D].ToInt() + keysPressedDict[Key.Right].ToInt();
-        if (activeTetromino is not null && lrInput != 0)
+        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT));
+        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT));
+        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT));
+        Debug.DrawLineSegment(new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT));
+        // grid lines
+        //  vertical
+        for (float f = TetrisMain.LEFT_WALL_POS; f < TetrisMain.RIGHT_WALL_POS; f += Tetromino.BLOCK_SIZE)
         {
-            activeTetromino.Position += new Vector2f(Tetromino.BLOCK_SIZE * lrInput, 0);
+            Debug.DrawLineSegment(new(f, TetrisMain.FLOOR_HEIGHT), new(f, TetrisMain.CEILING_HEIGHT));
         }
+        //  horizontal
+        for (float f = TetrisMain.FLOOR_HEIGHT; f > TetrisMain.CEILING_HEIGHT; f -= Tetromino.BLOCK_SIZE)
+        {
+            Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, f), new(TetrisMain.RIGHT_WALL_POS, f));
+        }
+    }
+
+    private IEnumerator HandleInput()
+    {
+        while (true)
+        {
+            if (!isPaused)
+            {
+                float lrInput = -keysPressedDict[Key.A].ToInt() + -keysPressedDict[Key.Left].ToInt() + keysPressedDict[Key.D].ToInt() + keysPressedDict[Key.Right].ToInt();
+                if (activeTetromino is not null)
+                {
+                    if (lrInput != 0)
+                    {
+                        activeTetromino.Position += new Vector2f(Tetromino.BLOCK_SIZE * lrInput, 0);
+                        if (!TetrominoInValidPosition(activeTetromino))
+                        {
+                            activeTetromino.Position -= new Vector2f(Tetromino.BLOCK_SIZE * lrInput, 0);
+                        }
+                    }
+                    if (keysPressedDict[Key.S] || keysPressedDict[Key.Down])
+                    {
+                        movesPerSecond = baseMovesPerSecond * 0.01f;
+                    }
+                    else
+                    {
+                        movesPerSecond = baseMovesPerSecond * 0.5f;
+                    }
+                }
+            }
+            // input wait to have breathing room every frame
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
+    private void RotateActiveTetromino(bool turnRight = true)
+    {
+        if (isPaused)
+        {
+            return;
+        }
+        if (activeTetromino is not null)
+        {
+            // TODO: try rotate, check collisions if there is a collision, unrotate
+            if (turnRight)
+            {
+                activeTetromino.TurnRight();
+            }
+            else
+            {
+                activeTetromino.TurnLeft();
+            }
+            if (!TetrominoInValidPosition(activeTetromino))
+            {
+                // undo turn
+                if (turnRight)
+                {
+                    activeTetromino.TurnLeft();
+                }
+                else
+                {
+                    activeTetromino.TurnRight();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Checks for any rows that are complete and clears them
+    /// </summary>
+    private void ClearCompleteRows()
+    {
+        Console.WriteLine();
+        Dictionary<int, List<RectangleShape>> rows = [];
+        foreach (RectangleShape rectangle in placedRectangles)
+        {
+            int roundedYPosition = (int)System.Math.Round(rectangle.Position.Y);
+            if (rows.TryGetValue(roundedYPosition, out var rects))
+            {
+                rects.Add(rectangle);
+            }
+            else
+            {
+                rows[roundedYPosition] = [rectangle];
+            }
+        }
+        // all rows above the highest cleared row go to where the lowest cleared row was
+        int lowestRow = 0; // highest Y value
+        List<int> rowsToClear = [];
+        foreach (int key in rows.Keys)
+        {
+            if (rows[key].Count == 10)
+            {
+                rowsToClear.Add(key);
+                if (key > lowestRow)
+                {
+                    lowestRow = key;
+                }
+                foreach (RectangleShape rect in rows[key])
+                {
+                    placedRectangles.Remove(rect);
+                }
+            }
+        }
+        foreach (RectangleShape rectangleShape in placedRectangles)
+        {
+            if ((int)System.Math.Round(rectangleShape.Position.Y) < lowestRow)
+            {
+                rectangleShape.Position = new Vector2f(rectangleShape.Position.X, rectangleShape.Position.Y + rowsToClear.Count * Tetromino.BLOCK_SIZE);
+            }
+        }
+
+        if (scoreText is not null)
+        {
+            scoreText.Score += rowsToClear.Count switch
+            {
+                0 => 0,
+                1 => 40,
+                2 => 100,
+                3 => 300,
+                4 => 1200,
+                _ => throw new InvalidOperationException($"Number of rows to clear: ({rowsToClear.Count}) not in range [1,4]")
+            };
+        }
+    }
+
+    /// <summary>
+    /// Used to check if the move just performed was valid
+    /// </summary>
+    /// <returns>true if the current position is not overlapping with other game pieces, false otherwise</returns>
+    private bool TetrominoInValidPosition(Tetromino toTest)
+    {
+        static bool IsBelowFloor(Transformable t) => (t.Position.Y + Tetromino.BLOCK_SIZE) > TetrisMain.FLOOR_HEIGHT;
+        static bool IsBeyondLeftWall(Transformable t) => t.Position.X < TetrisMain.LEFT_WALL_POS;
+        static bool IsBeyondRightWall(Transformable t) => (t.Position.X + Tetromino.BLOCK_SIZE) > TetrisMain.RIGHT_WALL_POS;
+        return toTest.Drawables.All(d => d is Transformable t && (
+            !IsBelowFloor(t) && !IsBeyondLeftWall(t) && !IsBeyondRightWall(t)
+        )) && !toTest.IsColliding(placedRectangles);
     }
 
     private static bool TetrominoIsPlacedAboveCieling(Tetromino tetrominoToTest)
         => tetrominoToTest.Drawables.Any(d => d is Transformable t && t.Position.Y < TetrisMain.CEILING_HEIGHT);
 
     private static bool TetrominoIsTouchingFloor(Tetromino tetrominoToTest)
-        => tetrominoToTest.Drawables.Any(d => d is RectangleShape r && (r.Position.Y + Tetromino.BLOCK_SIZE + Tetromino.BLOCK_MARGIN) >= TetrisMain.FLOOR_HEIGHT);
-        //=> tetrominoToTest.Drawables.Any(d => d is RectangleShape r && (
-        //        GameWindow.FindObjectOfType<TetrisFloor>()?.Drawables.Any(floorDrawable =>
-        //            floorDrawable is RectangleShape floorRectShape && r.GetGlobalBounds().Intersects(floorRectShape.GetGlobalBounds())
-        //        ) ?? false
-        //    )
-        //);
+        => tetrominoToTest.Drawables.Any(d => d is RectangleShape r && r.Position.Y >= TetrisMain.FLOOR_HEIGHT);
 
-    private static Vector2f AdvanceTetrominoDelta()
-        => new(0, Tetromino.BLOCK_SIZE + Tetromino.BLOCK_MARGIN / 2f);
 }

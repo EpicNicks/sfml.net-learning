@@ -37,7 +37,7 @@ public class CoroutineScheduler
     /// </summary>
     /// <param name="gameObject">The GameObject to attach the Coroutine to</param>
     /// <param name="routine">The IEnumerator routine to start as a Coroutine</param>
-    /// <returns></returns>
+    /// <returns>The created Coroutine object the caller may store to reference it in StopCoroutine</returns>
     public Coroutine StartCoroutine(GameObject gameObject, IEnumerator routine)
     {
         Coroutine coroutine = new Coroutine(routine);
@@ -57,7 +57,7 @@ public class CoroutineScheduler
     /// </summary>
     /// <param name="gameObject">The GameObject the Coroutine is attached to</param>
     /// <param name="coroutine">The Coroutine to stop</param>
-    /// <returns></returns>
+    /// <returns>true if the Couroutine was successfully removed from the CoroutineScheduler, false otherwise</returns>
     public bool StopCoroutine(GameObject gameObject, Coroutine coroutine)
     {
         if (Coroutines.TryGetValue(gameObject, out List<Coroutine>? value))
@@ -79,6 +79,12 @@ public class CoroutineScheduler
         }
     }
 
+    /// <summary>
+    /// Removes the passed GameObject from the CoroutineScheduler.
+    /// This stops all running Coroutines on it.
+    /// </summary>
+    /// <param name="gameObject">The GameObject to remove</param>
+    /// <returns>true if the GameObject was successfully removed, false otherwise</returns>
     public bool RemoveGameObject(GameObject gameObject)
     {
         return Coroutines.Remove(gameObject);
@@ -88,7 +94,7 @@ public class CoroutineScheduler
     /// Advances the passed Coroutine
     /// </summary>
     /// <param name="coroutine">The Coroutine to advance</param>
-    /// <returns>whether or not the coroutine has completed execution</returns>
+    /// <returns>true if the coroutine has completed execution, false otherwise</returns>
     private static bool AdvanceCoroutine(Coroutine coroutine)
     {
         return !coroutine.MoveNext();

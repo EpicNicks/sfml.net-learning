@@ -1,5 +1,4 @@
 ﻿using SFML_tutorial.BaseEngine.GameObjects.Composed;
-using SFML_tutorial.BaseEngine.GameObjects.ExternalState.StateDict;
 using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 using System.Collections;
 
@@ -103,7 +102,7 @@ public class Scene
         }
     }
 
-    public List<T> FindObjectsOfType<T>()
+    public List<T> FindObjectsOfType<T>() where T : GameObject
     {
         List<T> result = [];
         foreach (var gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
@@ -116,7 +115,7 @@ public class Scene
         return result;
     }
 
-    public T? FindObjectOfType<T>(RenderLayer renderLayer)
+    public T? FindObjectOfType<T>(RenderLayer renderLayer) where T : GameObject
     {
         foreach (var gameObject in GameObjects[renderLayer])
         {
@@ -125,19 +124,31 @@ public class Scene
                 return t;
             }
         }
-        return default;
+        return null;
     }
 
-    public T? FindObjectOfType<T>()
+    public T? FindObjectOfType<T>(string? name = null) where T : GameObject
     {
         foreach (var gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
         {
-            if (gameObject is T t)
+            if (gameObject is T t && (name == null || name == t.Name))
             {
                 return t;
             }
         }
-        return default;
+        return null;
+    }
+
+    public GameObject? FindObject(string name)
+    {
+        foreach (var gameObject in GameObjects.Keys.SelectMany(key => GameObjects[key]))
+        {
+            if (gameObject.Name == name)
+            {
+                return gameObject;
+            }
+        }
+        return null;
     }
 
     // Call the Coroutine Scheduler to remove all Coroutines associated with the GameObject

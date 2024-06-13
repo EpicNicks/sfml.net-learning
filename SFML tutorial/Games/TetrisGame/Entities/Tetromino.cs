@@ -18,12 +18,7 @@ public sealed class Tetromino : Positionable
     public const int BLOCK_MARGIN = 1;
 
     private readonly uint shapeIndex;
-    private uint turns = 0;
-    public uint Turns
-    {
-        get => turns;
-        set => turns = value % 4;
-    }
+    public uint Turns { get; private set; }
     public Color Color { get; set; }
 
     private static readonly ushort[,] shapes = new ushort[7,4]
@@ -49,6 +44,23 @@ public sealed class Tetromino : Positionable
         Color = other.Color;
     }
 
+    public void TurnLeft()
+    {
+        if (Turns == 0)
+        {
+            Turns = 3;
+        }
+        else
+        {
+            Turns--;
+        }
+    }
+
+    public void TurnRight()
+    {
+        Turns = (Turns + 1) % 4;
+    }
+
     #region Public API for retrieving Tetrominoes
     public static Tetromino T => new(0);
     public static Tetromino S => new(1);
@@ -66,17 +78,46 @@ public sealed class Tetromino : Positionable
         {
             List<Drawable> shapesRet = [];
 
-            ushort bitmask = shapes[shapeIndex, turns];
+            ushort bitmask = shapes[shapeIndex, Turns];
             for (int i = 0; i < 16; i++)
             {
                 if ((bitmask & (0x8000 >> i)) != 0)
                 {
                     int x = i % 4;
                     int y = i / 4;
-                    shapesRet.Add(new RectangleShape(new Vector2f(BLOCK_SIZE - BLOCK_MARGIN, BLOCK_SIZE - BLOCK_MARGIN))
+                    shapesRet.Add(new RectangleShape(new Vector2f(BLOCK_SIZE - BLOCK_MARGIN * 2, BLOCK_SIZE - BLOCK_MARGIN * 2))
                     {
                         FillColor = Color, // Set the color of the tetromino block
                         Position = Position + new Vector2f(x * BLOCK_SIZE, y * BLOCK_SIZE),
+                        OutlineColor = Color.White,
+                        OutlineThickness = BLOCK_MARGIN,
+                    });
+                    if (shapesRet.Count == 4) break; // early break, stop adding blocks once we have four
+                }
+            }
+            return shapesRet;
+        }
+    }
+
+    public List<RectangleShape> Rectangles
+    {
+        get
+        {
+            List<RectangleShape> shapesRet = [];
+
+            ushort bitmask = shapes[shapeIndex, Turns];
+            for (int i = 0; i < 16; i++)
+            {
+                if ((bitmask & (0x8000 >> i)) != 0)
+                {
+                    int x = i % 4;
+                    int y = i / 4;
+                    shapesRet.Add(new RectangleShape(new Vector2f(BLOCK_SIZE - BLOCK_MARGIN * 2, BLOCK_SIZE - BLOCK_MARGIN * 2))
+                    {
+                        FillColor = Color, // Set the color of the tetromino block
+                        Position = Position + new Vector2f(x * BLOCK_SIZE, y * BLOCK_SIZE),
+                        OutlineColor = Color.White,
+                        OutlineThickness = BLOCK_MARGIN,
                     });
                     if (shapesRet.Count == 4) break; // early break, stop adding blocks once we have four
                 }
@@ -87,17 +128,18 @@ public sealed class Tetromino : Positionable
 
     public bool IsColliding(Tetromino other)
     {
-        foreach (Drawable thisDrawable in Drawables)
+        return IsColliding(other.Rectangles);
+    }
+
+    public bool IsColliding(List<RectangleShape> rectangleShapes)
+    {
+        foreach (RectangleShape thisRectangle in Rectangles)
         {
-            foreach (Drawable otherDrawable in other.Drawables)
+            foreach (RectangleShape otherRectangleShape in rectangleShapes)
             {
-                if (thisDrawable is RectangleShape thisRect && otherDrawable is RectangleShape otherRect)
+                if (thisRectangle.GetGlobalBounds().Intersects(otherRectangleShape.GetGlobalBounds()))
                 {
-                    // split condition for testability
-                    if (thisRect.GetGlobalBounds().Intersects(otherRect.GetGlobalBounds()))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
