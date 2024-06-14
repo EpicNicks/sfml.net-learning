@@ -36,6 +36,7 @@ public class TetrominoManager : GameObject
     private int activeTetrominoPlacedFrames = 0;
     private bool isGameOver = false;
     private bool isPaused;
+    private bool isWaitingForAnimation = false;
 
     private ScoreText? scoreText;
     private UIAnchoredText? pauseText;
@@ -131,6 +132,10 @@ public class TetrominoManager : GameObject
     private void UpdateTetrominoes()
     {
         if (isGameOver)
+        {
+            return;
+        }
+        if (isWaitingForAnimation)
         {
             return;
         }
@@ -292,44 +297,72 @@ public class TetrominoManager : GameObject
                 rows[roundedYPosition] = [rectangle];
             }
         }
-        // all rows above the highest cleared row go to where the lowest cleared row was
-        int lowestRow = 0; // highest Y value
-        List<int> rowsToClear = [];
-        foreach (int key in rows.Keys)
-        {
-            if (rows[key].Count == 10)
-            {
-                rowsToClear.Add(key);
-                if (key > lowestRow)
-                {
-                    lowestRow = key;
-                }
-                foreach (RectangleShape rect in rows[key])
-                {
-                    placedRectangles.Remove(rect);
-                }
-            }
-        }
-        foreach (RectangleShape rectangleShape in placedRectangles)
-        {
-            if ((int)System.Math.Round(rectangleShape.Position.Y) < lowestRow)
-            {
-                rectangleShape.Position = new Vector2f(rectangleShape.Position.X, rectangleShape.Position.Y + rowsToClear.Count * Tetromino.BLOCK_SIZE);
-            }
-        }
 
-        if (scoreText is not null)
+        IEnumerator ClearRowsAnimation()
         {
-            scoreText.Score += rowsToClear.Count switch
+            // all rows above the highest cleared row go to where the lowest cleared row was
+            int lowestRow = 0; // highest Y value
+            List<int> rowsToClear = [];
+            List<RectangleShape> rectanglesToRemove = [];
+            foreach (int key in rows.Keys)
             {
-                0 => 0,
-                1 => 40,
-                2 => 100,
-                3 => 300,
-                4 => 1200,
-                _ => throw new InvalidOperationException($"Number of rows to clear: ({rowsToClear.Count}) not in range [1,4]")
-            };
+                if (rows[key].Count == 10)
+                {
+                    rowsToClear.Add(key);
+                    if (key > lowestRow)
+                    {
+                        lowestRow = key;
+                    }
+                    foreach (RectangleShape rect in rows[key])
+                    {
+                        rectanglesToRemove.Add(rect);
+                    }
+                }
+            }
+            Queue<Color> originalColors = [];
+            foreach (RectangleShape rect in rectanglesToRemove)
+            {
+                originalColors.Enqueue(rect.FillColor);
+                rect.FillColor = Color.White;
+            }
+            yield return new WaitForSeconds(0.1f);
+            foreach (RectangleShape rect in rectanglesToRemove)
+            {
+                rect.FillColor = originalColors.Dequeue();
+            }
+            yield return new WaitForSeconds(0.1f);
+            foreach (RectangleShape rect in rectanglesToRemove)
+            {
+                rect.FillColor = Color.White;
+            }
+            yield return new WaitForSeconds(0.1f);
+
+            foreach (RectangleShape rect in rectanglesToRemove)
+            {
+                placedRectangles.Remove(rect);
+            }
+
+            foreach (RectangleShape rectangleShape in placedRectangles)
+            {
+                if ((int)System.Math.Round(rectangleShape.Position.Y) < lowestRow)
+                {
+                    rectangleShape.Position = new Vector2f(rectangleShape.Position.X, rectangleShape.Position.Y + rowsToClear.Count * Tetromino.BLOCK_SIZE);
+                }
+            }
+            if (scoreText is not null)
+            {
+                scoreText.Score += rowsToClear.Count switch
+                {
+                    0 => 0,
+                    1 => 40,
+                    2 => 100,
+                    3 => 300,
+                    4 => 1200,
+                    _ => throw new InvalidOperationException($"Number of rows to clear: ({rowsToClear.Count}) not in range [1,4]")
+                };
+            }
         }
+        StartCoroutine(ClearRowsAnimation());
     }
 
     private void RefillBag()
