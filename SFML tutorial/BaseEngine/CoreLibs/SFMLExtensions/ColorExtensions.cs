@@ -25,7 +25,7 @@ public static class ColorExtensions
         => new Color(unchecked((uint)rnd.Next(int.MaxValue)));
 
     public static Color RandomOpaque(Random rnd)
-        => new Color((uint)rnd.Next(0x00FFFFFF) | 0xFF000000U);
+        => new Color((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256));
 
     public static Color GenerateBrightColor(Random rnd) 
         => new Color((byte)rnd.Next(128, 256), (byte)rnd.Next(128, 256), (byte)rnd.Next(128, 256));

@@ -48,7 +48,7 @@ public class TetrominoManager : GameObject
         rnd = new Random();
     }
 
-    public override List<Drawable> Drawables => placedRectangles.Select(r => (Drawable)r).ToList();
+    public override List<Drawable> Drawables => [.. placedRectangles.Select(r => (Drawable)r).ToList() ];
 
     public override void Attach()
     {
@@ -190,20 +190,22 @@ public class TetrominoManager : GameObject
 
     private void DrawDebugBounds()
     {
-        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT));
-        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT));
-        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT));
-        Debug.DrawLineSegment(new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT));
+        Color lineColor = new Color(0x999999FF);
+
+        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT), lineColor);
+        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT), lineColor);
+        Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.LEFT_WALL_POS, TetrisMain.CEILING_HEIGHT), lineColor);
+        Debug.DrawLineSegment(new(TetrisMain.RIGHT_WALL_POS, TetrisMain.FLOOR_HEIGHT), new(TetrisMain.RIGHT_WALL_POS, TetrisMain.CEILING_HEIGHT), lineColor);
         // grid lines
         //  vertical
         for (float f = TetrisMain.LEFT_WALL_POS; f < TetrisMain.RIGHT_WALL_POS; f += Tetromino.BLOCK_SIZE)
         {
-            Debug.DrawLineSegment(new(f, TetrisMain.FLOOR_HEIGHT), new(f, TetrisMain.CEILING_HEIGHT));
+            Debug.DrawLineSegment(new(f, TetrisMain.FLOOR_HEIGHT), new(f, TetrisMain.CEILING_HEIGHT), lineColor);
         }
         //  horizontal
         for (float f = TetrisMain.FLOOR_HEIGHT; f > TetrisMain.CEILING_HEIGHT; f -= Tetromino.BLOCK_SIZE)
         {
-            Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, f), new(TetrisMain.RIGHT_WALL_POS, f));
+            Debug.DrawLineSegment(new(TetrisMain.LEFT_WALL_POS, f), new(TetrisMain.RIGHT_WALL_POS, f), lineColor);
         }
     }
 
