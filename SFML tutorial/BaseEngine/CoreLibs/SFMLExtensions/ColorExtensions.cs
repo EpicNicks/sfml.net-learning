@@ -27,15 +27,15 @@ public static class ColorExtensions
     public static Color RandomOpaque(Random rnd)
         => new Color((byte)rnd.Next(256), (byte)rnd.Next(256), (byte)rnd.Next(256));
 
-    public static Color GenerateBrightColor(Random rnd) 
+    public static Color RandomBrightColor(Random rnd) 
         => new Color((byte)rnd.Next(128, 256), (byte)rnd.Next(128, 256), (byte)rnd.Next(128, 256));
 
-    public static Color GenerateDarkColor(Random rnd) 
+    public static Color RandomDarkColor(Random rnd) 
         => new Color((byte)rnd.Next(128), (byte)rnd.Next(128), (byte)rnd.Next(128));
 
-    public static Color GenerateWarmColor(Random rnd) 
+    public static Color RandomWarmColor(Random rnd) 
         => new Color((byte)rnd.Next(128, 256), (byte)rnd.Next(256), (byte)rnd.Next(128));
 
-    public static Color GenerateColdColor(Random rnd) 
+    public static Color RandomColdColor(Random rnd) 
         => new Color((byte)rnd.Next(128), (byte)rnd.Next(128), (byte)rnd.Next(128, 256));
 }
