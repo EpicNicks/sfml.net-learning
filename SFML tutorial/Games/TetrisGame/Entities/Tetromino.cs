@@ -11,7 +11,7 @@ public sealed class Tetromino : Positionable
     /// <summary>
     /// The size of rendered RectangleShapes
     /// </summary>
-    public const int BLOCK_SIZE = 20;
+    public const int BLOCK_SIZE = 25;
     /// <summary>
     /// The space between rendered RectangleShapes
     /// </summary>
@@ -26,10 +26,10 @@ public sealed class Tetromino : Positionable
         { 0x4640, 0x0E40, 0x4C40, 0x4E00 }, // T
         { 0x8C40, 0x6C00, 0x8C40, 0x6C00 }, // S
         { 0x4C80, 0xC600, 0x4C80, 0xC600 }, // Z
-        { 0x4444, 0x0F00, 0x4444, 0x0F00 }, // Straight
+        { 0x4444, 0x0F00, 0x4444, 0x0F00 }, // I (Straight)
         { 0x44C0, 0x8E00, 0xC880, 0xE200 }, // J
         { 0x88C0, 0xE800, 0xC440, 0x2E00 }, // L
-        { 0xCC00, 0xCC00, 0xCC00, 0xCC00 }  // BOX
+        { 0xCC00, 0xCC00, 0xCC00, 0xCC00 }  // O (Box)
     };
 
 
@@ -65,10 +65,10 @@ public sealed class Tetromino : Positionable
     public static Tetromino T => new(0);
     public static Tetromino S => new(1);
     public static Tetromino Z => new(2);
-    public static Tetromino Straight => new(3);
+    public static Tetromino I => new(3);
     public static Tetromino J => new(4);
     public static Tetromino L => new(5);
-    public static Tetromino Box => new(6);
+    public static Tetromino O => new(6);
     public static Tetromino Random(Random rnd) => new((uint)rnd.Next(0, 7)) { Color = ColorExtensions.Random(rnd) };
     #endregion
 

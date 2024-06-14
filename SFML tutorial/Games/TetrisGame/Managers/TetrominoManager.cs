@@ -12,6 +12,7 @@ using SFML_tutorial.BaseEngine.CoreLibs.Mathematics;
 using System.Collections;
 using SFML_tutorial.BaseEngine.Scheduling.Coroutines;
 using SFML_tutorial.Games.TetrisGame.UI;
+using SFML_tutorial.Games.TetrisGame.Helpers;
 
 namespace SFML_tutorial.Games.TetrisGame.Managers;
 public class TetrominoManager : GameObject
@@ -65,10 +66,7 @@ public class TetrominoManager : GameObject
         }
 
         movesPerSecond = baseMovesPerSecond * 0.5f;
-        foreach (var _ in Enumerable.Range(0, 10))
-        {
-            nextTetrominoes.Enqueue(Tetromino.Random(rnd));
-        }
+        RefillBag();
         RegisterInputEvents();
         StartCoroutine(HandleInput());
     }
@@ -116,7 +114,10 @@ public class TetrominoManager : GameObject
         }
         else if (keyEvent.Code == Key.P)
         {
-            isPaused = !isPaused;
+            if (!isGameOver)
+            {
+                isPaused = !isPaused;
+            }
         }
     }
     private void OnKeyReleased(object? _, KeyEventArgs keyEvent)
@@ -142,7 +143,7 @@ public class TetrominoManager : GameObject
             activeTetromino = nextTetrominoes.Dequeue();
             activeTetromino.Position = new(TetrisMain.GAME_WIDTH / 2f, TetrisMain.CEILING_HEIGHT - Tetromino.BLOCK_SIZE * 4);
             GameWindow.Add(RenderLayer.BASE, activeTetromino);
-            nextTetrominoes.Enqueue(Tetromino.Random(rnd));
+            RefillBag();
         }
         else
         {
@@ -164,6 +165,10 @@ public class TetrominoManager : GameObject
                     if (TetrominoIsPlacedAboveCieling(activeTetromino))
                     {
                         isGameOver = true;
+                        if (gameOverText is not null)
+                        {
+                            gameOverText.IsActive = true;
+                        }
                     }
                     placedRectangles.AddRange(activeTetromino.Rectangles.Select(r =>
                     {
@@ -321,6 +326,17 @@ public class TetrominoManager : GameObject
                 3 => 300,
                 4 => 1200,
                 _ => throw new InvalidOperationException($"Number of rows to clear: ({rowsToClear.Count}) not in range [1,4]")
+            };
+        }
+    }
+
+    private void RefillBag()
+    {
+        if (nextTetrominoes.Count == 0)
+        {
+            foreach (Tetromino tetromino in TetrominoHelper.GenerateBag(rnd))
+            {
+                nextTetrominoes.Enqueue(tetromino);
             };
         }
     }

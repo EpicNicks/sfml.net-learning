@@ -11,6 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Tetris Theme.flac" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Tetris Theme.flac">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SFML.Net" Version="2.5.1" />
   </ItemGroup>
 

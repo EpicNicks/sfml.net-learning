@@ -121,4 +121,7 @@
   <data name="Roboto-Black" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Fonts\Roboto\Roboto-Black.ttf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="Tetris Theme" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Tetris Theme.flac;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

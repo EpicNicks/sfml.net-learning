@@ -21,8 +21,15 @@ public class UIAnchoredText : UIAnchored
 
     public override List<Drawable> Drawables => [text];
 
-    public override (UIAnchor x, UIAnchor y) Anchors { get => base.Anchors; set => base.Anchors = value; }
-
+    public override (UIAnchor x, UIAnchor y) Anchors 
+    { 
+        get => base.Anchors; set
+        {
+            base.Anchors = value;
+            // required because properties set after the constructor is run
+            text.Position = PositionLocally(text.GetLocalBounds());
+        }
+    }
 
     public override void Update()
     {

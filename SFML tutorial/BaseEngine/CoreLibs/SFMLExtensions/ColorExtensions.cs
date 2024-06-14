@@ -22,7 +22,20 @@ public static class ColorExtensions
     }
 
     public static Color Random(Random rnd)
-    {
-        return new Color(unchecked((uint)rnd.Next(int.MaxValue)));
-    }
+        => new Color(unchecked((uint)rnd.Next(int.MaxValue)));
+
+    public static Color RandomOpaque(Random rnd)
+        => new Color((uint)rnd.Next(0x00FFFFFF) | 0xFF000000U);
+
+    public static Color GenerateBrightColor(Random rnd) 
+        => new Color((byte)rnd.Next(128, 256), (byte)rnd.Next(128, 256), (byte)rnd.Next(128, 256));
+
+    public static Color GenerateDarkColor(Random rnd) 
+        => new Color((byte)rnd.Next(128), (byte)rnd.Next(128), (byte)rnd.Next(128));
+
+    public static Color GenerateWarmColor(Random rnd) 
+        => new Color((byte)rnd.Next(128, 256), (byte)rnd.Next(256), (byte)rnd.Next(128));
+
+    public static Color GenerateColdColor(Random rnd) 
+        => new Color((byte)rnd.Next(128), (byte)rnd.Next(128), (byte)rnd.Next(128, 256));
 }

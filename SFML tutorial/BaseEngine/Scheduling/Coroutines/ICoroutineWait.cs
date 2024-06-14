@@ -72,3 +72,12 @@ public class WaitForSeconds(float waitSeconds) : ICoroutineWait
         return false;
     }
 }
+
+/// <summary>
+/// Used in IEnumerators wrapped by Coroutines to tell it to delay forever, 
+///     effectively running the Coroutine until it has been explicitly stopped in the Scheduler (GameObject.StopCoroutine).
+/// </summary>
+public class WaitForever : ICoroutineWait
+{
+    public bool Wait() => true;
+}
