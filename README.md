@@ -7,6 +7,8 @@ Coroutines were particularly fun for me to implement.
 ## How do I run this?
 Visual Studio and .NET 8.0
 
+Ensure implicit usings is enabled.
+
 ## Why is this Repository?
 For fun and learning.
 
