@@ -20,17 +20,7 @@ public interface ICoroutineWait
 /// </summary>
 public class WaitForNextFrame : ICoroutineWait
 {
-    private bool waitCalled = false;
-
-    public bool Wait()
-    {
-        if (!waitCalled)
-        {
-            waitCalled = true;
-            return true;
-        }
-        return false;
-    }
+    public bool Wait() => false;
 }
 
 /// <summary>
@@ -44,7 +34,7 @@ public class WaitForFrames(uint waitFrames) : ICoroutineWait
 
     public bool Wait()
     {
-        if (waitCalledCount < waitFrames)
+        if (waitCalledCount < waitFrames - 1)
         {
             waitCalledCount++;
             return true;
