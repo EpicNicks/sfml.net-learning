@@ -298,27 +298,28 @@ public class TetrominoManager : GameObject
             }
         }
 
-        IEnumerator ClearRowsAnimation()
+        // all rows above the highest cleared row go to where the lowest cleared row was
+        int lowestRow = 0; // highest Y value
+        List<int> rowsToClear = [];
+        List<RectangleShape> rectanglesToRemove = [];
+        foreach (int roundedYPos in rows.Keys)
         {
-            // all rows above the highest cleared row go to where the lowest cleared row was
-            int lowestRow = 0; // highest Y value
-            List<int> rowsToClear = [];
-            List<RectangleShape> rectanglesToRemove = [];
-            foreach (int key in rows.Keys)
+            if (rows[roundedYPos].Count == 10)
             {
-                if (rows[key].Count == 10)
+                rowsToClear.Add(roundedYPos);
+                if (roundedYPos > lowestRow)
                 {
-                    rowsToClear.Add(key);
-                    if (key > lowestRow)
-                    {
-                        lowestRow = key;
-                    }
-                    foreach (RectangleShape rect in rows[key])
-                    {
-                        rectanglesToRemove.Add(rect);
-                    }
+                    lowestRow = roundedYPos;
+                }
+                foreach (RectangleShape rect in rows[roundedYPos])
+                {
+                    rectanglesToRemove.Add(rect);
                 }
             }
+        }
+
+        IEnumerator ClearRowsAnimation()
+        {
             Queue<Color> originalColors = [];
             foreach (RectangleShape rect in rectanglesToRemove)
             {
@@ -346,7 +347,8 @@ public class TetrominoManager : GameObject
             {
                 if ((int)System.Math.Round(rectangleShape.Position.Y) < lowestRow)
                 {
-                    rectangleShape.Position = new Vector2f(rectangleShape.Position.X, rectangleShape.Position.Y + rowsToClear.Count * Tetromino.BLOCK_SIZE);
+                    int numberOfRowsBelowRect = rowsToClear.Count(roundedYPos => roundedYPos > rectangleShape.Position.Y);
+                    rectangleShape.Position = new Vector2f(rectangleShape.Position.X, rectangleShape.Position.Y + numberOfRowsBelowRect * Tetromino.BLOCK_SIZE);
                 }
             }
             if (scoreText is not null)
