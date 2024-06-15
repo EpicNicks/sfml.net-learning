@@ -16,7 +16,8 @@ public interface ICoroutineWait
 
 /// <summary>
 /// Used in IEnumerators wrapped by Coroutines to tell it to delay execution to the next frame.
-/// Equivalent to a null yield return but with more explicit intent.
+/// Equivalent to any yield return that is not a ICoroutineWait derived yield return but with more explicit intent.
+/// (This is true for Unity's Coroutine system too even though Unity only specifies null as being equivalent in its docs)
 /// </summary>
 public class WaitForNextFrame : ICoroutineWait
 {

@@ -13,7 +13,7 @@ public static class TetrominoHelper
         return AllTetrominoes()
             .Select(tetromino =>
             {
-                tetromino.Color = ColorExtensions.RandomOpaque(rnd);
+                tetromino.Color = ColorExtensions.RandomBrightColor(rnd);
                 return tetromino;
             })
             .OrderBy(_ => rnd.Next())

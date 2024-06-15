@@ -32,8 +32,8 @@ public class TetrominoManager : GameObject
     private float baseMovesPerSecond = 1.0f;
     private float movesPerSecond;
     private float moveSecondsElapsed;
-    private readonly int FRAMES_BEFORE_TETROMINO_PLACED = 1;
-    private int activeTetrominoPlacedFrames = 0;
+    private bool isFinishedPlacingTetromino = true;
+    private readonly float SECONDS_BEFORE_TETROMINO_PLACED = 0.5f;
     private bool isGameOver = false;
     private bool isPaused;
     private bool isWaitingForAnimation = false;
@@ -162,33 +162,46 @@ public class TetrominoManager : GameObject
             activeTetromino.Position += AdvanceTetrominoDelta;
             if (activeTetromino.IsColliding(placedRectangles) || TetrominoIsTouchingFloor(activeTetromino))
             {
-                // undo move
                 activeTetromino.Position -= AdvanceTetrominoDelta;
-                if (activeTetrominoPlacedFrames >= FRAMES_BEFORE_TETROMINO_PLACED)
+                if (isFinishedPlacingTetromino)
                 {
-                    // place Tetromino
-                    if (TetrominoIsPlacedAboveCieling(activeTetromino))
+                    StartCoroutine(PlaceTetromino());
+                    Console.WriteLine("started placing");
+                }
+            }
+        }
+
+        IEnumerator PlaceTetromino()
+        {
+            isFinishedPlacingTetromino = false;
+            yield return new WaitForSeconds(SECONDS_BEFORE_TETROMINO_PLACED);
+            // recheck that the place is valid
+            activeTetromino.Position += AdvanceTetrominoDelta;
+            if (!(activeTetromino.IsColliding(placedRectangles) || TetrominoIsTouchingFloor(activeTetromino)))
+            {
+                isFinishedPlacingTetromino = true;
+                activeTetromino.Position -= AdvanceTetrominoDelta;
+            }
+            else
+            {
+                activeTetromino.Position -= AdvanceTetrominoDelta;
+                if (TetrominoIsPlacedAboveCieling(activeTetromino))
+                {
+                    isGameOver = true;
+                    if (gameOverText is not null)
                     {
-                        isGameOver = true;
-                        if (gameOverText is not null)
-                        {
-                            gameOverText.IsActive = true;
-                        }
+                        gameOverText.IsActive = true;
                     }
-                    placedRectangles.AddRange(activeTetromino.Rectangles.Select(r =>
-                    {
-                        r.Position = new((int)System.Math.Round(r.Position.X), (int)System.Math.Round(r.Position.Y));
-                        return r;
-                    }));
-                    activeTetrominoPlacedFrames = 0;
-                    activeTetromino.Destroy();
-                    activeTetromino = null;
-                    ClearCompleteRows();
                 }
-                else
+                placedRectangles.AddRange(activeTetromino.Rectangles.Select(r =>
                 {
-                    activeTetrominoPlacedFrames++;
-                }
+                    r.Position = new((int)System.Math.Round(r.Position.X), (int)System.Math.Round(r.Position.Y));
+                    return r;
+                }));
+                activeTetromino.Destroy();
+                activeTetromino = null;
+                ClearCompleteRows();
+                isFinishedPlacingTetromino = true;
             }
         }
     }
@@ -242,30 +255,30 @@ public class TetrominoManager : GameObject
                 }
             }
             // input wait to have breathing room every frame
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
     private void RotateActiveTetromino(bool turnRight = true)
     {
-        if (isPaused)
+        if (isPaused || activeTetromino is null)
         {
             return;
         }
-        if (activeTetromino is not null)
+
+        if (turnRight)
         {
-            // TODO: try rotate, check collisions if there is a collision, unrotate
-            if (turnRight)
+            activeTetromino.TurnRight();
+        }
+        else
+        {
+            activeTetromino.TurnLeft();
+        }
+
+        if (!TetrominoInValidPosition(activeTetromino))
+        {
+            if (!TryWallKick(activeTetromino, turnRight))
             {
-                activeTetromino.TurnRight();
-            }
-            else
-            {
-                activeTetromino.TurnLeft();
-            }
-            if (!TetrominoInValidPosition(activeTetromino))
-            {
-                // undo turn
                 if (turnRight)
                 {
                     activeTetromino.TurnLeft();
@@ -276,6 +289,28 @@ public class TetrominoManager : GameObject
                 }
             }
         }
+    }
+
+    private bool TryWallKick(Tetromino tetromino, bool turnRight)
+    {
+        Vector2f[] kickOffsets = new Vector2f[]
+        {
+        new Vector2f(Tetromino.BLOCK_SIZE, 0),
+        new Vector2f(2 * Tetromino.BLOCK_SIZE, 0),
+        new Vector2f(-Tetromino.BLOCK_SIZE, 0),
+        new Vector2f(-2 * Tetromino.BLOCK_SIZE, 0)
+        };
+
+        foreach (var offset in kickOffsets)
+        {
+            tetromino.Position += offset;
+            if (TetrominoInValidPosition(tetromino))
+            {
+                return true;
+            }
+            tetromino.Position -= offset;
+        }
+        return false;
     }
 
     /// <summary>
